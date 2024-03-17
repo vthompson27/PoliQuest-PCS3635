@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .btn {
+            display: inline-block;
+            margin: 10px;
+            text-decoration: none;
+            background: #ACECA1;
+            color: #629460;
+            font: 40px calibri;
+            border-radius: 32px;
+            box-shadow: 0px 0px 2px 2px #243119;
+            border: solid 5px #96BE8C;
+            cursor: pointer;
+            text-align: center;
+            padding: 10px;
+        }
+
+        body {
+            font-family: "Calibri";
+            background-color: #C9F2C7;
+            text-align: center;
+        }
+
+        h1 {
+            color: #629460;
+            text-align: center;
+            font-size: 60px;
+        }
+
+        #word,
+        #sentence,
+        #constructedSentence {
+            font-size: 40px;
+            margin: 20px;
+        }
+
+        .options {
+            margin-top: 20px;
+        }
+
+        .selected {
+            outline: 5px solid #4c0603;
+            /* Estilo para item selecionado */
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="mainTitle">Bem-vindo! <br> PoliQuest</h1>
+    <div id="mainMenu">
+        <a href="#" class="btn" onclick="showMode(1)">Modo 1</a>
+        <a href="#" class="btn" onclick="showMode(2)">Modo 2</a>
+    </div>
+    <div id="mode1" class="hidden">
+        <p id="word"></p>
+        <hr>
+        <div class="options" id="optionsMode1"></div>
+        <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
+    </div>
+    <div id="mode2" class="hidden">
+        <p id="sentence"></p>
+        <p id="constructedSentence"></p>
+        <hr>
+        <div class="options" id="optionsMode2"></div>
+        <a href="#" class="btn" onclick='clearConstructedSentence()'>Limpar Frase</a><br>
+        <a href="#" class="btn" onclick='checkSentence()'>Verificar Frase</a><br>
+        <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
+    </div>
+
+    <script>
+        let currentQuestionIndex = 0;
+        let currentSentenceIndex = 0;
+        let constructedSentence = [];
+        let currentIndex = 0;
+        let menuItems = document.querySelectorAll('#mainMenu .btn');
+        let modeActive = false;
+
+        function updateSelected(index) {
+            menuItems.forEach(item => item.classList.remove('selected'));
+            if (menuItems.length > 0) {
+                menuItems[index].classList.add('selected');
+            }
+        }
+
+        function backToMenu() {
+            modeActive = false;
+            currentQuestionIndex = 0;
+            currentSentenceIndex = 0;
+            constructedSentence = [];
+            document.getElementById('mainTitle').style.display = 'block';
+            document.getElementById('mainMenu').style.display = 'block';
+            document.getElementById('mode1').classList.add('hidden');
+            document.getElementById('mode2').classList.add('hidden');
+            menuItems = document.querySelectorAll('#mainMenu .btn');
+            currentIndex = 0;
+            updateSelected(currentIndex);
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                alert("Você completou todas as perguntas do Modo 1!");
+                backToMenu();
+                return;
+            }
+
+            let question = questions[currentQuestionIndex];
+            document.getElementById('word').textContent = `Palavra: ${question.word}`;
+            let optionsHtml = '';
+            question.options.forEach((option) => {
+                optionsHtml += `<a href="#" class="btn" onclick='checkAnswer("${option}", "${question.correct}")'>${option}</a>`;
+            });
+            document.getElementById('optionsMode1').innerHTML = optionsHtml;
+            menuItems = document.querySelectorAll('#mode1 .btn, #mode1 .options a');
+            currentIndex = 0;
+            updateSelected(currentIndex);
+        }
+
+        function checkAnswer(given, correct) {
+            if (given === correct) {
+                alert("Correto!");
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                alert("Incorreto!");
+            }
+        }
+
+        function loadSentence() {
+            if (currentSentenceIndex >= sentences.length) {
+                alert("Você completou todas as frases do Modo 2!");
+                backToMenu();
+                return;
+            }
+
+            let sentence = sentences[currentSentenceIndex];
+            document.getElementById('sentence').textContent = `Frase: ${sentence.english}`;
+
+            // Limpar a frase construída e atualizar a exibição
+            constructedSentence = [];
+            document.getElementById('constructedSentence').textContent = '';
+
+            let optionsHtml = '';
+            sentence.portuguese.forEach((word) => {
+                optionsHtml += `<a href="#" class="btn" onclick='addToSentence("${word}")'>${word}</a>`;
+            });
+            document.getElementById('optionsMode2').innerHTML = optionsHtml;
+            menuItems = document.querySelectorAll('#mode2 .btn, #mode2 .options a');
+            currentIndex = 0;
+            updateSelected(currentIndex);
+        }
+
+        function addToSentence(word) {
+            constructedSentence.push(word);
+            document.getElementById('constructedSentence').textContent = constructedSentence.join(' ');
+        }
+
+
+        function clearConstructedSentence() {
+        constructedSentence = [];
+        document.getElementById('constructedSentence').textContent = '';
+        }
+
+
+        function checkSentence() {
+            let sentence = sentences[currentSentenceIndex];
+            if (constructedSentence.join(' ') === sentence.correct) {
+                alert("Correto!");
+                currentSentenceIndex++;
+                if (currentSentenceIndex < sentences.length) {
+                    loadSentence();
+                } else {
+                    alert("Você completou todas as frases do Modo 2!");
+                    backToMenu();
+                }
+            } else {
+                alert("Incorreto! Tente novamente.");
+            }
+        }
+
+        function showMode(mode) {
+            modeActive = true;
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('mainTitle').style.display = 'none';
+
+            if (mode === 1) {
+                document.getElementById('mode1').classList.remove('hidden');
+                document.getElementById('mode2').classList.add('hidden');
+                loadQuestion();
+            } else if (mode === 2) {
+                document.getElementById('mode2').classList.remove('hidden');
+                document.getElementById('mode1').classList.add('hidden');
+                loadSentence();
+            }
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (modeActive) {
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                    currentIndex = (event.key === 'ArrowLeft') ?
+                        (currentIndex > 0 ? currentIndex - 1 : menuItems.length - 1) :
+                        (currentIndex < menuItems.length - 1 ? currentIndex + 1 : 0);
+                    updateSelected(currentIndex);
+                } else if (event.key === 'Enter' && menuItems[currentIndex]) {
+                    menuItems[currentIndex].click();
+                }
+            } else {
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                    currentIndex = (event.key === 'ArrowLeft') ?
+                        (currentIndex > 0 ? currentIndex - 1 : menuItems.length - 1) :
+                        (currentIndex < menuItems.length - 1 ? currentIndex + 1 : 0);
+                    updateSelected(currentIndex);
+                } else if (event.key === 'Enter') {
+                    // Ajuste aqui: garantir que a função showMode seja chamada com o índice correto.
+                    showMode(currentIndex + 1);
+                }
+            }
+        });
+
+        updateSelected(0);
+
+
+        const questions = [
+            { word: "Casa", options: ["House", "Cat", "Dog"], correct: "House" },
+            { word: "Cão", options: ["Dog", "House", "Tree"], correct: "Dog" },
+            { word: "Árvore", options: ["Cat", "Tree", "House"], correct: "Tree" }
+        ];
+
+        const sentences = [
+            { english: "The cat is under the table", portuguese: ["debaixo", "está", "gato", "O", "da", "mesa"], correct: "O gato está debaixo da mesa" },
+            { english: "The dog is in the house", portuguese: ["está", "O", "na", "cachorro", "casa"], correct: "O cachorro está na casa" }
+        ];
+    </script>
+</body>
+
+</html>
