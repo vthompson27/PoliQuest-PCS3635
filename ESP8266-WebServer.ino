@@ -7,8 +7,8 @@
 #include "gamemode1Code.h"
 //------------------------------------------
 ESP8266WebServer server(80);
-const char* ssid = "OGATA";
-const char* password = "Gilberto101";
+const char* ssid = "";
+const char* password = "";
 //------------------------------------------
 void webpage()
 {
