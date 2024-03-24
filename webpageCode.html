@@ -52,11 +52,59 @@
     </style>
 </head>
 
-<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+<script>
+    var mqtt;
+    var reconnectTimeout = 30000;
+    var host = "test.mosquitto.org";
+    var port = 8080;
+
+    function publishMessage() {
+    if (!mqtt || mqtt.connected === false) {
+        console.log("Não conectado ao MQTT broker, tente se conectar novamente.");
+        return;
+    }
+    const mensagem = "Esta é uma mensagem de teste do meu site!";
+    mqtt.send("poliQuestPortasESP", mensagem, 1, false);
+}
+
+    function onConnect() {
+        console.log("Conectado");
+        mqtt.subscribe("poliQuestPortasESP");
+    }
+
+    function onError(message){
+        //Ocorrencia de erro
+        console.log("Falha: " + message.errorCode + " " + message.errorMessage);
+        setTimeout(MQTTConnect, reconnectTimeout);
+    }
+
+    function onMessageArrived(msg){
+        //Mensagem recebida
+        console.log("Mensagem: " + msg.destinationName + " " + msg.payloadString);
+    }
+
+    function MQTTConnect() {
+        //Conecta ao broker
+        console.log("Contectando " + host + " " + port);
+        mqtt = new Paho.MQTT.Client(host, port, "poliQuestPortasESP");
+        var options = { timeout: 30000,
+                        keepAliveInterval: 30000,
+                        onSuccess: onConnect,
+                        onFailure: onError
+    };
+        mqtt.onMessageArrived = onMessageArrived;
+        mqtt.onConnectionLost = onError;
+        mqtt.connect(options);
+    }
+</script>
+
+<body onLoad="MQTTConnect()">
     <h1 id="mainTitle">Bem-vindo! <br> PoliQuest</h1>
     <div id="mainMenu">
         <a href="#" class="btn" onclick="showMode(1)">Modo 1</a>
         <a href="#" class="btn" onclick="showMode(2)">Modo 2</a>
+        <button id="publishMessage" class="btn" onclick="publishMessage()">Publicar Mensagem</button>
     </div>
     <div id="mode1" class="hidden">
         <p id="word"></p>
@@ -73,7 +121,6 @@
         <a href="#" class="btn" onclick='checkSentence()'>Verificar Frase</a><br>
         <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
     </div>
-
     <script>
         let currentQuestionIndex = 0;
         let currentSentenceIndex = 0;
