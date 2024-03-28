@@ -11,6 +11,7 @@
  *      Data        Versao  Autor             Descricao
  *      22/03/2024  1.0     Vitor Thompson    versao inicial
  *      23/03/2024  1.2     Vitor Thompson    ativação das portas do ESP
+ *      25/03/2024  1.3     Vitor Thompson    modificações nas portas
  * ----------------------------------------------------------------------
  */
 
@@ -23,19 +24,19 @@
 // definição das portas para placa ESP8266 12-E NodeMCU
 #define D0 16  // payload[1]  resetJog    HIGH no BOOT
 #define D1 5   // payload[2]  jogada[0]
-#define D2 4   // payload[3]  jogada[1]
-#define D3 0   // payload[4]  iniciarJogo BOOT falha se estiver em LOW
-#define D4 2   // payload[5]  sairJogo    HIGH no BOOT, BOOT falha se estiver em LOW
+#define D2 4   // payload[3]  perdeu      BOOT falha se estiver em LOW
+#define D3 0   // payload[4]  jogada[1] 
+#define D4 2   // payload[5]  confimaJog  HIGH no BOOT, BOOT falha se estiver em LOW
 #define D5 14  // payload[6]  jogada[2]
 #define D6 12  // payload[7]  jogada[3]
 #define D7 13  // payload[8]  ganhou
-#define D8 15  // payload[9]  perdeu      BOOT falha se estiver em HIGH
+#define D8 15  // payload[9]  iniciarJogo BOOT falha se estiver em HIGH
 #define RX 3   // payload[10] reset       HIGH no BOOT
-#define TX 1   // payload[11] confimaJog  HIGH no BOOT, BOOT falha se estiver em LOW
+#define TX 1   // payload[11] sairJogo    HIGH no BOOT, BOOT falha se estiver em LOW
 
 // parametros para conexão com o WiFi
-const char * ssid     = "LabDigi";    // nome da rede
-const char * password = "Midorikawa"; // senha
+const char * ssid     = "AndroidAP7F43";    // nome da rede
+const char * password = "tvuh4449"; // senha
 
 // parametros para conexão com o MQTT Broker
 const char * mqtt_broker   = "test.mosquitto.org"; // Host do broker
@@ -62,15 +63,14 @@ void callback (char * topic, byte * payload, unsigned int length); // sera chama
   // definição das portas
   pinMode(D0, OUTPUT);
   pinMode(D1, OUTPUT);
-  pinMode(D2, OUTPUT);
   pinMode(D3, OUTPUT);
   pinMode(D4, OUTPUT);
   pinMode(D5, OUTPUT);
   pinMode(D6, OUTPUT);
+  pinMode(D8, OUTPUT);
   pinMode(RX, OUTPUT);
-  pinMode(TX, OUTPUT);
+  pinMode(D2, INPUT);
   pinMode(D7, INPUT);
-  pinMode(D8, INPUT);
 
   // inicializa a conexão com a rede WiFi
   WiFi.begin(ssid, password);
@@ -94,12 +94,12 @@ void callback (char * topic, byte * payload, unsigned int length); // sera chama
     client.loop();
 
     if (digitalRead(D7)) {
-      client.publish(topic, "{00000001000}");
+      // client.publish(topic, "{00000001000}");
       Serial.println("Ganhou jogo");
     }
     
-    if (digitalRead(D8)) {
-      client.publish(topic, "{00000000100}");
+    if (digitalRead(D2)) {
+      // client.publish(topic, "{00000000100}");
       Serial.println("Perdeu jogo");
     }
   }
@@ -161,38 +161,42 @@ void callback (char * topic, byte * payload, unsigned int length) {
     Serial.print((char) payload[i]);
   } 
 
-  digitalWrite(D0, payload[1]);
-  digitalWrite(D1, payload[2]);
-  digitalWrite(D2, payload[3]);
-  digitalWrite(D3, payload[4]);
-  digitalWrite(D4, payload[5]);
-  digitalWrite(D5, payload[6]);
-  digitalWrite(D6, payload[7]);
-  digitalWrite(RX, payload[10]);
-  digitalWrite(TX, payload[11]);
+  digitalWrite(D0, payload[1] - '0');
+  digitalWrite(D1, payload[2] - '0');
+  digitalWrite(D3, payload[4] - '0');
+  digitalWrite(D4, payload[5] - '0');
+  digitalWrite(D5, payload[6] - '0');
+  digitalWrite(D6, payload[7] - '0');
+  digitalWrite(D8, payload[9] - '0');
+  digitalWrite(RX, payload[10] - '0');
+
+  Serial.println();
+  Serial.println();
+  Serial.print("D8 - iniciarJogo: ");
+  Serial.println(digitalRead(D8));
+  Serial.print("D1 - jogada[0]  : ");
+  Serial.println(digitalRead(D1));
+  Serial.print("D3 - jogada[1]  : ");
+  Serial.println(digitalRead(D3));
+  Serial.print("D5 - jogada[2]  : ");
+  Serial.println(digitalRead(D5));
+  Serial.print("D6 - jogada[3]  : ");
+  Serial.println(digitalRead(D6));
+  Serial.print("D0 - resetJog   : ");
+  Serial.println(digitalRead(D0));
+  Serial.print("D4 - confimaJog : ");
+  Serial.println(digitalRead(D4));
+  Serial.print("D7 - ganhou     : ");
+  Serial.println(digitalRead(D7));
+  Serial.print("D2 - perdeu     : ");
+  Serial.println(digitalRead(D2));
+  Serial.print("RX - reset      : ");
+  Serial.println(digitalRead(RX));
+  Serial.println();
 
   // faz com que as saídas fiquem ativas por 50 milisegundos
   unsigned long int timer = millis();
   while ((millis() - timer) < 50) {
-    Serial.print("D0: ");
-    Serial.println(digitalRead(D0));
-    Serial.print("D1: ");
-    Serial.println(digitalRead(D1));
-    Serial.print("D2: ");
-    Serial.println(digitalRead(D2));
-    Serial.print("D3: ");
-    Serial.println(digitalRead(D3));
-    Serial.print("D4: ");
-    Serial.println(digitalRead(D4));
-    Serial.print("D5: ");
-    Serial.println(digitalRead(D5));
-    Serial.print("D6: ");
-    Serial.println(digitalRead(D6));
-    Serial.print("RX: ");
-    Serial.println(digitalRead(RX));
-    Serial.print("TX: ");
-    Serial.println(digitalRead(TX));
-    Serial.println();
   }
   
   digitalWrite(D0, 0);

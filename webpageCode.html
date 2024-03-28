@@ -59,12 +59,12 @@
     var host = "test.mosquitto.org";
     var port = 8080;
 
-    function publishMessage() {
+    function publishMessage(message) {
     if (!mqtt || mqtt.connected === false) {
-        console.log("Não conectado ao MQTT broker, tente se conectar novamente.");
+        console.log(message);
         return;
     }
-    const mensagem = "Esta é uma mensagem de teste do meu site!";
+    const mensagem = message;
     mqtt.send("poliQuestPortasESP", mensagem, 1, false);
 }
 
@@ -97,14 +97,23 @@
         mqtt.onConnectionLost = onError;
         mqtt.connect(options);
     }
+
+    // function playSound() {
+    //     var sound = document.getElementById("buttonSound");
+    //     sound.play();
+    // }
+
 </script>
+
+<!-- <audio id="buttonSound">
+    <source src="whats.mp3" type="audio/mpeg">
+</audio> -->
 
 <body onLoad="MQTTConnect()">
     <h1 id="mainTitle">Bem-vindo! <br> PoliQuest</h1>
     <div id="mainMenu">
         <a href="#" class="btn" onclick="showMode(1)">Modo 1</a>
         <a href="#" class="btn" onclick="showMode(2)">Modo 2</a>
-        <button id="publishMessage" class="btn" onclick="publishMessage()">Publicar Mensagem</button>
     </div>
     <div id="mode1" class="hidden">
         <p id="word"></p>
@@ -160,8 +169,8 @@
             let question = questions[currentQuestionIndex];
             document.getElementById('word').textContent = `Palavra: ${question.word}`;
             let optionsHtml = '';
-            question.options.forEach((option) => {
-                optionsHtml += `<a href="#" class="btn" onclick='checkAnswer("${option}", "${question.correct}")'>${option}</a>`;
+            question.options.forEach((option, index) => {
+                optionsHtml += `<a href="#" class="btn" onclick='checkAnswer("${index}", "${option}", "${question.correct}")'>${option}</a>`;
             });
             document.getElementById('optionsMode1').innerHTML = optionsHtml;
             menuItems = document.querySelectorAll('#mode1 .btn, #mode1 .options a');
@@ -169,12 +178,15 @@
             updateSelected(currentIndex);
         }
 
-        function checkAnswer(given, correct) {
+        function checkAnswer(index, given, correct) {
             if (given === correct) {
+                publishMessage(index);
+                // playSound();
                 alert("Correto!");
                 currentQuestionIndex++;
                 loadQuestion();
             } else {
+                publishMessage(index);
                 alert("Incorreto!");
             }
         }
@@ -194,8 +206,8 @@
             document.getElementById('constructedSentence').textContent = '';
 
             let optionsHtml = '';
-            sentence.portuguese.forEach((word) => {
-                optionsHtml += `<a href="#" class="btn" onclick='addToSentence("${word}")'>${word}</a>`;
+            sentence.portuguese.forEach((word, index) => {
+                optionsHtml += `<a href="#" class="btn" onclick='addToSentence("${index}", "${word}")'>${word}</a>`;
             });
             document.getElementById('optionsMode2').innerHTML = optionsHtml;
             menuItems = document.querySelectorAll('#mode2 .btn, #mode2 .options a');
@@ -203,15 +215,17 @@
             updateSelected(currentIndex);
         }
 
-        function addToSentence(word) {
+        function addToSentence(index, word) {
+            publishMessage(index);
             constructedSentence.push(word);
             document.getElementById('constructedSentence').textContent = constructedSentence.join(' ');
         }
 
 
         function clearConstructedSentence() {
-        constructedSentence = [];
-        document.getElementById('constructedSentence').textContent = '';
+            publishMessage('9');
+            constructedSentence = [];
+            document.getElementById('constructedSentence').textContent = '';
         }
 
 
