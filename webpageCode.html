@@ -61,58 +61,55 @@
     var port = 8080;
 
     function publishMessage(message) {
-    if (!mqtt || mqtt.connected === false) {
-        console.log(message);
-        return;
+        if (!mqtt || mqtt.connected === false) {
+            console.log(message);
+            return;
+        }
+        const mensagem = message;
+        mqtt.send("poliQuestPortasESP", mensagem, 1, false);
     }
-    const mensagem = message;
-    mqtt.send("poliQuestPortasESP", mensagem, 1, false);
-}
 
     function onConnect() {
         console.log("Conectado");
         mqtt.subscribe("poliQuestPortasESP");
     }
 
-    function onError(message){
-        //Ocorrencia de erro
+    function onError(message) {
         console.log("Falha: " + message.errorCode + " " + message.errorMessage);
         setTimeout(MQTTConnect, reconnectTimeout);
     }
 
-    function onMessageArrived(msg){
-        //Mensagem recebida
+    function onMessageArrived(msg) {
         console.log(msg.payloadString);
 
-        if (msg.payloadString == "{00000000000010}"){
+        if (msg.payloadString == "{00000000000010}") {
             currentIndex++;
             updateSelected(currentIndex);
         }
 
-        if (msg.payloadString == "{00000000000100}"){
+        if (msg.payloadString == "{00000000000100}") {
             if (currentIndex == 0) {
-            updateSelected(currentIndex);
+                updateSelected(currentIndex);
             } else {
                 currentIndex--;
                 updateSelected(currentIndex);
             }
         }
 
-        if (msg.payloadString == "{00000000000001}"){
+        if (msg.payloadString == "{00000000000001}") {
             menuItems[currentIndex].click();
         }
-
     }
 
     function MQTTConnect() {
-        //Conecta ao broker
         console.log("Contectando " + host + " " + port);
         mqtt = new Paho.MQTT.Client(host, port, "poliQuestPortasESP");
-        var options = { timeout: 30000,
-                        keepAliveInterval: 30000,
-                        onSuccess: onConnect,
-                        onFailure: onError
-    };
+        var options = {
+            timeout: 30000,
+            keepAliveInterval: 30000,
+            onSuccess: onConnect,
+            onFailure: onError
+        };
         mqtt.onMessageArrived = onMessageArrived;
         mqtt.onConnectionLost = onError;
         mqtt.connect(options);
@@ -124,6 +121,7 @@
     }
 
 </script>
+
 
 <audio id="acertou">
     <source src="positivo.mp3" type="audio/mpeg">
@@ -137,9 +135,28 @@
     <source src="click.mp3" type="audio/mpeg">
 </audio>
 
-<!-- <audio id="theme">
-    <source src="whatsRemix.mp3" type="audio/mpeg">
-</audio> -->
+<!-- Áudios para as palavras em outro idioma -->
+<audio id="soundHouse">
+    <source src="house.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundDog">
+    <source src="dog.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundTree">
+    <source src="tree.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundThecatisunderthetable">
+    <source src="thecatisunderthetable.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundThedogisinthehouse">
+    <source src="thedogisinthehouse.mp3" type="audio/mpeg">
+</audio>
+
+</head>
 
 <body onLoad="MQTTConnect()">
     <h1 id="mainTitle">Bem-vindo! <br> PoliQuest</h1>
@@ -151,6 +168,7 @@
         <p id="word"></p>
         <hr>
         <div class="options" id="optionsMode1"></div>
+        <button id="playSoundButton" class="btn" onclick="playWordSound()">Ouvir Palavra</button>
         <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
     </div>
     <div id="mode2" class="hidden">
@@ -158,6 +176,8 @@
         <p id="constructedSentence"></p>
         <hr>
         <div class="options" id="optionsMode2"></div>
+        <!-- Botão para ouvir a frase completa -->
+        <button id="playSentenceButton" class="btn" onclick="playSentenceSound()">Ouvir Frase</button>
         <a href="#" class="btn" onclick='clearConstructedSentence()'>Limpar Frase</a><br>
         <a href="#" class="btn" onclick='checkSentence()'>Verificar Frase</a><br>
         <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
@@ -208,6 +228,17 @@
             menuItems = document.querySelectorAll('#mode1 .btn, #mode1 .options a');
             currentIndex = 0;
             updateSelected(currentIndex);
+            // Atualiza o atributo onclick do botão para reproduzir o som correto
+            document.getElementById('playSoundButton').setAttribute('onclick', `playWordSound('${question.correct}')`);
+        }
+
+        function playWordSound(sound) {
+            var soundElement = document.getElementById('sound' + sound);
+            if (soundElement) {
+                soundElement.play();
+            } else {
+                console.log("Som não encontrado para a palavra: " + sound);
+            }
         }
 
         function checkAnswer(index, given, correct) {
@@ -224,6 +255,16 @@
             }
         }
 
+        function playSentenceSound() {
+            let sentence = sentences[currentSentenceIndex];
+            let soundElement = document.getElementById('sound' + sentence.english.replace(/ /g, ''));
+            if (soundElement) {
+                soundElement.play();
+            } else {
+                console.log("Som não encontrado para a frase: " + sentence.english);
+            }
+        }
+
         function loadSentence() {
             if (currentSentenceIndex >= sentences.length) {
                 alert("Você completou todas as frases do Modo 2!");
@@ -233,6 +274,7 @@
 
             let sentence = sentences[currentSentenceIndex];
             document.getElementById('sentence').textContent = `Frase: ${sentence.english}`;
+            document.getElementById('playSentenceButton').setAttribute('onclick', `playSentenceSound()`);
 
             // Limpar a frase construída e atualizar a exibição
             constructedSentence = [];
