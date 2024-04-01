@@ -101,10 +101,10 @@
         }
 
         if (msg.payLoadString == "{00000000010000}") {
-            alert("FPGA FALOU QUE ESTA CERTO");
+            alert("OS CARAS FALARAM QUE ESTA CERTO");
         }
         if (msg.payLoadString == "{00000000001000}") {
-            alert("FPGA FALOU QUE ESTA ERRADO");
+            alert("OS CARAS FALARAM QUE ESTA ERRADO");
         }
     }
 
@@ -155,12 +155,20 @@
     <source src="tree.mp3" type="audio/mpeg">
 </audio>
 
-<audio id="pants">
+<audio id="soundPants">
     <source src="pants.mp3" type="audio/mpeg">
 </audio>
 
-<audio id="broom">
+<audio id="soundBroom">
     <source src="broom.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundHair">
+    <source src="hair.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundPencil">
+    <source src="pencil.mp3" type="audio/mpeg">
 </audio>
 
 <!--Áudios para frases --> 
@@ -174,6 +182,22 @@
 
 <audio id="soundMypatienceisrunningout">
     <source src="mypatienceisrunningout.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundGuyssayalotofthings">
+    <source src="guyssayalotofthings.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundIwaitatthebusstop">
+    <source src="iwaitatthebusstop.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundhereIamanotherday">
+    <source src="hereIamanotherday.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundIwearmypants">
+    <source src="iwearmypants.mp3" type="audio/mpeg">
 </audio>
 
 </head>
@@ -232,19 +256,22 @@
             updateSelected(currentIndex);
         }
 
-        function loadQuestion() {
-            if (currentQuestionIndex >= questions.length) {
-                alert("Você completou todas as perguntas do Modo 1!");
-                backToMenu();
-                return;
-            }
+        function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
 
-            let question = questions[currentQuestionIndex];
+        function loadQuestion() {
+
+            const randomNumber = getRandomInt(0, 6);
+            let question = questions[randomNumber];
             document.getElementById('word').textContent = `Palavra: ${question.word}`;
             
+            numberOfButton =
             let optionsHtml = '';
-            question.options.forEach((option, index) => {
-                optionsHtml += `<a href="#" class="btn" onclick='checkAnswer("${index}", "${option}", "${question.correct}")'>${option}</a>`;
+            question.options.forEach((option, randomNumber) => {
+                optionsHtml += `<a href="#" class="btn" onclick='checkAnswer("${randomNumber}", "${option}", "${question.correct}")'>${option}</a>`;
             });
 
             document.getElementById('optionsMode1').innerHTML = optionsHtml;
@@ -278,12 +305,14 @@
 
             if (given === correct) {
                 playSound("acertou");
-                alert("Correto!");
-                currentQuestionIndex++;
-                loadQuestion();
+                alert("Você ganhou o Modo 1!");
+                backToMenu();
+                return;
             } else {
                 playSound("errou");
                 alert("Incorreto!");
+                backToMenu();
+                return;
             }
         }
 
@@ -298,12 +327,6 @@
         }
 
         function loadSentence() {
-
-            if (currentSentenceIndex >= sentences.length) {
-                alert("Você completou todas as frases do Modo 2!");
-                backToMenu();
-                return;
-            }
 
             let sentence = sentences[currentSentenceIndex];
             
@@ -352,14 +375,9 @@
             if (constructedSentence.join(' ') === sentence.correct) {
                 alert("Correto!");
                 playSound("acertou");
-                currentSentenceIndex++;
                 
-                if (currentSentenceIndex < sentences.length) {
-                    loadSentence();
-                } else {
-                    alert("Você completou todas as frases do Modo 2!");
-                    backToMenu();
-                }
+                alert("ganhou o jogo! Parabéns!");
+                backToMenu();
             } else {
                 alert("Incorreto! Tente novamente.");
                 playSound("errou");
