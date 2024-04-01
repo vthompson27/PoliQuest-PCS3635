@@ -18,6 +18,22 @@
             padding: 10px;
         }
 
+        .btn2 {
+            display: inline-block;
+            margin: 5px;
+            text-decoration: none;
+            background: #568ece;
+            color: #3b5f39;
+            font: 26px calibri;
+            border-radius: 16px;
+            box-shadow: 0px 0px 2px 2px #243119;
+            border: solid 5px #5f4f9f;
+            cursor: pointer;
+            text-align: center;
+            padding: 10px;
+        }
+
+
         body {
             font-family: "Calibri";
             background-color: #C9F2C7;
@@ -129,7 +145,6 @@
 
 </script>
 
-
 <audio id="acertou">
     <source src="audio/positivo.mp3" type="audio/mpeg">
 </audio>
@@ -200,9 +215,13 @@
     <source src="audio/iwearmypants.mp3" type="audio/mpeg">
 </audio>
 
-<audio id="introMusic" autoplay loop>
-    <source src="audio/whatsRemix.mp3" type="audio/mpeg">
+<audio id="soundvanish">
+    <source src="audio/vanish.mp3" type="audio/mpeg">
 </audio>
+
+<!-- <audio id="introMusic" autoplay loop>
+    <source src="audio/theme.mp3" type="audio/mpeg">
+</audio>  -->
 
 </head>
 
@@ -217,7 +236,7 @@
         <hr>
         <div class="options" id="optionsMode1"></div>
         <button id="playSoundButton" class="btn" onclick="playWordSound()">Ouvir Palavra</button>
-        <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
+        <a href="#" class="btn2" onclick='backToMenu()'>Voltar</a>
     </div>
     <div id="mode2" class="hidden">
         <p id="sentence"></p>
@@ -226,21 +245,22 @@
         <div class="options" id="optionsMode2"></div>
         <!-- Botão para ouvir a frase completa -->
         <button id="playSentenceButton" class="btn" onclick="playSentenceSound()">Ouvir Frase</button>
-        <a href="#" class="btn" onclick='clearConstructedSentence()'>Limpar Frase</a><br>
-        <a href="#" class="btn" onclick='checkSentence()'>Verificar Frase</a><br>
-        <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
+        <a href="#" class="btn2" onclick='clearConstructedSentence()'>Limpar Frase</a><br>
+        <a href="#" class="btn2" onclick='checkSentence()'>Verificar Frase</a><br>
+        <a href="#" class="btn2" onclick='backToMenu()'>Voltar</a>
     </div>
     <div id="mode3" class="hidden">
         <p id="Ultimate"></p>
-        <h1 id="mainTitle">Acabou, tu não fez mais que o básico!</h1>
+        <h1 id="mainTitle">Parabéns!</h1>
         <hr>
-        <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
+        <a href="#" id="btnMode3" class="btn" onclick='backToMenu()'>Voltar</a>
+
     </div>
     <div id="mode4" class="hidden">
         <p id="Ultimate"></p>
-        <h1 id="mainTitle">Fim da linha Parça, você perdeu!</h1>
+        <h1 id="mainTitle">Perdeu!</h1>
         <hr>
-        <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
+        <a href="#" id="btnMode4" class="btn" onclick='backToMenu()'>Voltar</a>
     </div>
  </div>   </body>
     <script>
@@ -295,7 +315,7 @@
             optionsHtml = optionsHtml.join('');
 
             document.getElementById('optionsMode1').innerHTML = optionsHtml;
-            menuItems = document.querySelectorAll('#mode1 .btn, #mode1 .options a');
+            menuItems = document.querySelectorAll('#mode1 .btn, #mode1 .options a, #mode1 .btn2');
 
             currentIndex = 0;
             updateSelected(currentIndex);
@@ -325,13 +345,9 @@
 
             if (given === correct) {
                 playSound("acertou");
-                alert("Você ganhou o Modo 1!");
-                backToMenu();
                 return;
             } else {
                 playSound("errou");
-                alert("Incorreto!");
-                backToMenu();
                 return;
             }
         }
@@ -376,7 +392,7 @@
             optionsHtml = optionsHtml.join('');
 
             document.getElementById('optionsMode2').innerHTML = optionsHtml;
-            menuItems = document.querySelectorAll('#mode2 .btn, #mode2 .options a');
+            menuItems = document.querySelectorAll('#mode2 .btn, #mode2 .options a, #mode2 .btn2');
             currentIndex = 0;
             updateSelected(currentIndex);
         }
@@ -395,6 +411,7 @@
 
         function clearConstructedSentence() {
             publishMessage('{000000010000000} - resetJog   :  RX2');
+            playSound("soundvanish");
             constructedSentence = [];
             document.getElementById('constructedSentence').textContent = '';
         }
@@ -403,13 +420,9 @@
             publishMessage("{000000100000000} - confimaJog :  TX2 ");
             let sentence = sentences[currentSentenceIndex];
             if (constructedSentence.join(' ') === sentence.correct) {
-                alert("Correto!");
                 playSound("acertou");
-                
-                alert("ganhou o jogo! Parabéns!");
                 backToMenu();
             } else {
-                alert("Incorreto! Tente novamente.");
                 playSound("errou");
             }
         }
@@ -436,20 +449,28 @@
                 document.getElementById('mode3').classList.add('hidden');
                 document.getElementById('mode4').classList.add('hidden');
                 loadSentence();
-            }
-            else if (mode === 3) {
+            } else if (mode === 3) {
                 document.getElementById('mode3').classList.remove('hidden');
                 document.getElementById('mode1').classList.add('hidden');
                 document.getElementById('mode2').classList.add('hidden');
                 document.getElementById('mode4').classList.add('hidden');
-            }
-            else if (mode === 4) {
+                document.getElementById('btnMode3').focus();
+                menuItems = document.querySelectorAll('#mode3 .btn, #mode3 .options a');
+
+                currentIndex = 0;
+                updateSelected(currentIndex);
+            } else if (mode === 4) {
                 document.getElementById('mode4').classList.remove('hidden');
                 document.getElementById('mode1').classList.add('hidden');
                 document.getElementById('mode2').classList.add('hidden');
                 document.getElementById('mode3').classList.add('hidden');
-            }
-        }
+                document.getElementById('btnMode4').focus();
+                menuItems = document.querySelectorAll('#mode4 .btn, #mode4 .options a');
+
+                currentIndex = 0;
+                updateSelected(currentIndex);
+            }   
+        }       
 
         document.addEventListener('keydown', function (event) {
             if (modeActive) {
@@ -496,7 +517,7 @@
             { english: "The dog is in the house", portuguese: ["O", "cachorro", "está", "na", "casa"], correct: "O cachorro está na casa" }
         ];
 
-        document.getElementById('introMusic').volume = 0.1; // Define o volume para metade do volume máximo
+        // document.getElementById('introMusic').volume = 0.5; // Define o volume para metade do volume máximo
 
     </script>
 </body>
