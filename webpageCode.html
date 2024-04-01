@@ -100,11 +100,11 @@
             menuItems[currentIndex].click();
         }
 
-        if (msg.payLoadString == "{00000000010000}") {
-            alert("OS CARAS FALARAM QUE ESTA CERTO");
+        if (msg.payloadString == "{00000000010000}") {
+            showMode(3);
         }
-        if (msg.payLoadString == "{00000000001000}") {
-            alert("OS CARAS FALARAM QUE ESTA ERRADO");
+        if (msg.payloadString == "{00000000001000}") {
+            showMode(4);
         }
     }
 
@@ -185,7 +185,7 @@
 </audio>
 
 <audio id="soundGuyssayalotofthings">
-    <source src="guyssayalotofthings.mp3" type="audio/mpeg">
+    <source src="Guyssayalotofthings.mp3" type="audio/mpeg">
 </audio>
 
 <audio id="soundIwaitatthebusstop">
@@ -199,6 +199,10 @@
 <audio id="soundIwearmypants">
     <source src="iwearmypants.mp3" type="audio/mpeg">
 </audio>
+
+<!-- <audio id="introMusic" autoplay loop>
+    <source src="whatsRemix.mp3" type="audio/mpeg">
+</audio> -->
 
 </head>
 
@@ -226,8 +230,20 @@
         <a href="#" class="btn" onclick='checkSentence()'>Verificar Frase</a><br>
         <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
     </div>
+    <div id="mode3" class="hidden">
+        <p id="Ultimate"></p>
+        <h1 id="mainTitle">Acabou, tu não fez mais que o básico!</h1>
+        <hr>
+        <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
+    </div>
+    <div id="mode4" class="hidden">
+        <p id="Ultimate"></p>
+        <h1 id="mainTitle">Fim da linha Parça, você perdeu!</h1>
+        <hr>
+        <a href="#" class="btn" onclick='backToMenu()'>Voltar</a>
+    </div>
+ </div>   </body>
     <script>
-        let currentQuestionIndex = 0;
         let currentSentenceIndex = 0;
         let constructedSentence = [];
         let currentIndex = 0;
@@ -242,15 +258,16 @@
         }
 
         function backToMenu() {
-            publishMessage("{000000010000000} - resetJog   :  RX2 ");
+            publishMessage("{100000000000000} - reset      :  D23");
             modeActive = false;
-            currentQuestionIndex = 0;
             currentSentenceIndex = 0;
             constructedSentence = [];
             document.getElementById('mainTitle').style.display = 'block';
             document.getElementById('mainMenu').style.display = 'block';
             document.getElementById('mode1').classList.add('hidden');
             document.getElementById('mode2').classList.add('hidden');
+            document.getElementById('mode3').classList.add('hidden');
+            document.getElementById('mode4').classList.add('hidden');
             menuItems = document.querySelectorAll('#mainMenu .btn');
             currentIndex = 0;
             updateSelected(currentIndex);
@@ -267,12 +284,15 @@
             const randomNumber = getRandomInt(0, 6);
             let question = questions[randomNumber];
             document.getElementById('word').textContent = `Palavra: ${question.word}`;
-            
-            numberOfButton =
-            let optionsHtml = '';
-            question.options.forEach((option, randomNumber) => {
-                optionsHtml += `<a href="#" class="btn" onclick='checkAnswer("${randomNumber}", "${option}", "${question.correct}")'>${option}</a>`;
+
+            let optionsHtml = [];
+            question.options.forEach((option, index) => {
+                optionsHtml[index] =  `<a href="#" class="btn" onclick='checkAnswer("${index}", "${option}", "${question.correct}")'>${option}</a>`;
             });
+            //shuffle optionsHtml
+            optionsHtml = optionsHtml.sort(() => Math.random() - 0.5);
+            // make a string with the optionsHtml
+            optionsHtml = optionsHtml.join('');
 
             document.getElementById('optionsMode1').innerHTML = optionsHtml;
             menuItems = document.querySelectorAll('#mode1 .btn, #mode1 .options a');
@@ -294,7 +314,7 @@
         }
 
         let vector = [
-            "0000", "1000", "0100", "1100", "0010", "1010", "0110", "1110", "0001", "1001", "0101", "1101", "0011", "1011", "0111"];
+            "1000", "0100", "1100", "0010", "1010", "0110", "1110", "0001", "1001", "0101", "1101", "0011", "1011", "0111"];
 
         function checkAnswer(index, given, correct) {
             let message = "{00";
@@ -328,12 +348,16 @@
 
         function loadSentence() {
 
-            let sentence = sentences[currentSentenceIndex];
+            const randomNumber = getRandomInt(0, 6);
+            currentSentenceIndex = randomNumber;
+
+            let sentence = sentences[randomNumber];
             
             let numPal = "{00";
-            numPal += vector[sentence.portuguese.length];
+            numPal += vector[sentence.portuguese.length - 1];
             numPal += "00000000}";
-            publishMessage(message);
+            publishMessage(numPal);
+            console.log(sentence.portuguese.length);
 
             document.getElementById('sentence').textContent = `Frase: ${sentence.english}`;
             document.getElementById('playSentenceButton').setAttribute('onclick', `playSentenceSound()`);
@@ -342,10 +366,14 @@
             constructedSentence = [];
             document.getElementById('constructedSentence').textContent = '';
 
-            let optionsHtml = '';
+            let optionsHtml = [];
             sentence.portuguese.forEach((word, index) => {
-                optionsHtml += `<a href="#" class="btn" onclick='addToSentence("${index}", "${word}")'>${word}</a>`;
+                optionsHtml[index] = `<a href="#" class="btn" onclick='addToSentence("${index}", "${word}")'>${word}</a>`;
             });
+            //shuffle optionsHtml
+            optionsHtml = optionsHtml.sort(() => Math.random() - 0.5);
+            // make a string with the optionsHtml
+            optionsHtml = optionsHtml.join('');
 
             document.getElementById('optionsMode2').innerHTML = optionsHtml;
             menuItems = document.querySelectorAll('#mode2 .btn, #mode2 .options a');
@@ -358,6 +386,7 @@
             message += vector[index];
             message += "00000000}";
             publishMessage(message);
+            console.log(index);
             
             playSound("click");
             constructedSentence.push(word);
@@ -371,6 +400,7 @@
         }
 
         function checkSentence() {
+            publishMessage("{000000100000000} - confimaJog :  TX2 ");
             let sentence = sentences[currentSentenceIndex];
             if (constructedSentence.join(' ') === sentence.correct) {
                 alert("Correto!");
@@ -389,17 +419,35 @@
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('mainTitle').style.display = 'none';
             
-            publishMessage("{010000000000000} - iniciarJogo:  D22");
-            
             if (mode === 1) {
+                publishMessage("{010000000000000} - iniciarJogo:  D22");
+
                 publishMessage("{001000000000000} - NumPal = 1");
                 document.getElementById('mode1').classList.remove('hidden');
                 document.getElementById('mode2').classList.add('hidden');
+                document.getElementById('mode3').classList.add('hidden');
+                document.getElementById('mode4').classList.add('hidden');
                 loadQuestion();
             } else if (mode === 2) {
+                publishMessage("{010000000000000} - iniciarJogo:  D22");
+
                 document.getElementById('mode2').classList.remove('hidden');
                 document.getElementById('mode1').classList.add('hidden');
+                document.getElementById('mode3').classList.add('hidden');
+                document.getElementById('mode4').classList.add('hidden');
                 loadSentence();
+            }
+            else if (mode === 3) {
+                document.getElementById('mode3').classList.remove('hidden');
+                document.getElementById('mode1').classList.add('hidden');
+                document.getElementById('mode2').classList.add('hidden');
+                document.getElementById('mode4').classList.add('hidden');
+            }
+            else if (mode === 4) {
+                document.getElementById('mode4').classList.remove('hidden');
+                document.getElementById('mode1').classList.add('hidden');
+                document.getElementById('mode2').classList.add('hidden');
+                document.getElementById('mode3').classList.add('hidden');
             }
         }
 
@@ -431,26 +479,25 @@
         const questions = [
             { word: "Casa", options: ["House", "Cat", "Dog"], correct: "House" },
             { word: "Cão", options: ["Dog", "House", "Tree"], correct: "Dog" },
-            { word: "Árvore", options: ["Cat", "Tree", "House"], correct: "Tree" },
-            { word: "Calças", options: ["Paper", "Game", "Pants", "Shirt"], correct: "Pants" },
-            { word: "Cabelo", options: ["Head", "Hair", "Eye", "Shirt"], correct: "Hair" },
-            { word: "Lápis", options: ["Book", "Pen", "Eye", "Pencil"], correct: "Pencil" },
-            { word: "Vassoura", options: ["Vanish", "Broom", "Keyboard"], correct: "Broom" }
+            { word: "Árvore", options: ["Tree", "Cat", "House"], correct: "Tree" },
+            { word: "Calças", options: ["Pants", "Paper", "Game", "Shirt"], correct: "Pants" },
+            { word: "Cabelo", options: ["Hair", "Head", "Eye", "Shirt"], correct: "Hair" },
+            { word: "Lápis", options: ["Pencil", "Book", "Pen", "Eye"], correct: "Pencil" },
+            { word: "Vassoura", options: ["Broom", "Vanish", "Keyboard"], correct: "Broom" }
         ];
 
         const sentences = [
             { english: "The cat is under the table", portuguese: ["O", "gato", "está", "debaixo", "da", "mesa"], correct: "O gato está debaixo da mesa" },
             { english: "My patience is running out", portuguese: ["minha", "paciência", "está", "acabando"], correct: "minha paciência está acabando" },     
-            { english: "Guys say a lot of things", portuguese: ["os caras", "muitas", "falam", "coisas"], correct: "os caras falam muitas coisas" },     
-            { english: "I wait at the bus stop", portuguese: ["ponto de", "espero", "no", "eu", "ônibus"], correct: "eu espero no ponto de ônibus" },     
-            { english: "here I am another day", portuguese: ["dia", "aqui", "um", "mais", "estou"], correct: "aqui estou mais um dia" },     
-            { english: "I wear my pants", portuguese: ["visto", "eu", "minhas", "calças"], correct: "eu visto minhas calças" },     
-          
+            { english: "Guys say a lot of things", portuguese: ["os caras", "falam", "muitas", "coisas"], correct: "os caras falam muitas coisas" },     
+            { english: "I wait at the bus stop", portuguese: ["eu", "espero", "no", "ponto de", "ônibus"], correct: "eu espero no ponto de ônibus" },     
+            { english: "here I am another day", portuguese: ["aqui",  "estou", "mais", "um", "dia"], correct: "aqui estou mais um dia" },     
+            { english: "I wear my pants", portuguese: ["eu", "visto", "minhas", "calças"], correct: "eu visto minhas calças" },     
             { english: "The dog is in the house", portuguese: ["O", "cachorro", "está", "na", "casa"], correct: "O cachorro está na casa" }
         ];
+
+        // document.getElementById('introMusic').volume = 0.1; // Define o volume para metade do volume máximo
+
     </script>
-
-
 </body>
-
 </html>
