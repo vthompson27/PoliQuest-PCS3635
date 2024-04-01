@@ -99,6 +99,13 @@
         if (msg.payloadString == "{00000000000001}") {
             menuItems[currentIndex].click();
         }
+
+        if (msg.payLoadString == "{00000000010000}") {
+            alert("FPGA FALOU QUE ESTA CERTO");
+        }
+        if (msg.payLoadString == "{00000000001000}") {
+            alert("FPGA FALOU QUE ESTA ERRADO");
+        }
     }
 
     function MQTTConnect() {
@@ -148,12 +155,25 @@
     <source src="tree.mp3" type="audio/mpeg">
 </audio>
 
+<audio id="pants">
+    <source src="pants.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="broom">
+    <source src="broom.mp3" type="audio/mpeg">
+</audio>
+
+<!--Áudios para frases --> 
 <audio id="soundThecatisunderthetable">
     <source src="thecatisunderthetable.mp3" type="audio/mpeg">
 </audio>
 
 <audio id="soundThedogisinthehouse">
     <source src="thedogisinthehouse.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundMypatienceisrunningout">
+    <source src="mypatienceisrunningout.mp3" type="audio/mpeg">
 </audio>
 
 </head>
@@ -198,6 +218,7 @@
         }
 
         function backToMenu() {
+            publishMessage("{000000010000000} - resetJog   :  RX2 ");
             modeActive = false;
             currentQuestionIndex = 0;
             currentSentenceIndex = 0;
@@ -220,14 +241,18 @@
 
             let question = questions[currentQuestionIndex];
             document.getElementById('word').textContent = `Palavra: ${question.word}`;
+            
             let optionsHtml = '';
             question.options.forEach((option, index) => {
                 optionsHtml += `<a href="#" class="btn" onclick='checkAnswer("${index}", "${option}", "${question.correct}")'>${option}</a>`;
             });
+
             document.getElementById('optionsMode1').innerHTML = optionsHtml;
             menuItems = document.querySelectorAll('#mode1 .btn, #mode1 .options a');
+
             currentIndex = 0;
             updateSelected(currentIndex);
+            
             // Atualiza o atributo onclick do botão para reproduzir o som correto
             document.getElementById('playSoundButton').setAttribute('onclick', `playWordSound('${question.correct}')`);
         }
@@ -241,15 +266,22 @@
             }
         }
 
+        let vector = [
+            "0000", "1000", "0100", "1100", "0010", "1010", "0110", "1110", "0001", "1001", "0101", "1101", "0011", "1011", "0111"];
+
         function checkAnswer(index, given, correct) {
+            let message = "{00";
+            message += vector[index];
+            message += "00000000}";
+            publishMessage(message);
+            publishMessage("{000000100000000} - confimaJog :  TX2 ");
+
             if (given === correct) {
-                publishMessage(index);
                 playSound("acertou");
                 alert("Correto!");
                 currentQuestionIndex++;
                 loadQuestion();
             } else {
-                publishMessage(index);
                 playSound("errou");
                 alert("Incorreto!");
             }
@@ -266,6 +298,7 @@
         }
 
         function loadSentence() {
+
             if (currentSentenceIndex >= sentences.length) {
                 alert("Você completou todas as frases do Modo 2!");
                 backToMenu();
@@ -273,6 +306,12 @@
             }
 
             let sentence = sentences[currentSentenceIndex];
+            
+            let numPal = "{00";
+            numPal += vector[sentence.portuguese.length];
+            numPal += "00000000}";
+            publishMessage(message);
+
             document.getElementById('sentence').textContent = `Frase: ${sentence.english}`;
             document.getElementById('playSentenceButton').setAttribute('onclick', `playSentenceSound()`);
 
@@ -284,26 +323,29 @@
             sentence.portuguese.forEach((word, index) => {
                 optionsHtml += `<a href="#" class="btn" onclick='addToSentence("${index}", "${word}")'>${word}</a>`;
             });
+
             document.getElementById('optionsMode2').innerHTML = optionsHtml;
             menuItems = document.querySelectorAll('#mode2 .btn, #mode2 .options a');
             currentIndex = 0;
             updateSelected(currentIndex);
         }
-
+        
         function addToSentence(index, word) {
-            publishMessage(index);
+            let message = "{00";
+            message += vector[index];
+            message += "00000000}";
+            publishMessage(message);
+            
             playSound("click");
             constructedSentence.push(word);
             document.getElementById('constructedSentence').textContent = constructedSentence.join(' ');
         }
 
-
         function clearConstructedSentence() {
-            publishMessage('9');
+            publishMessage('{000000010000000} - resetJog   :  RX2');
             constructedSentence = [];
             document.getElementById('constructedSentence').textContent = '';
         }
-
 
         function checkSentence() {
             let sentence = sentences[currentSentenceIndex];
@@ -311,6 +353,7 @@
                 alert("Correto!");
                 playSound("acertou");
                 currentSentenceIndex++;
+                
                 if (currentSentenceIndex < sentences.length) {
                     loadSentence();
                 } else {
@@ -327,8 +370,11 @@
             modeActive = true;
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('mainTitle').style.display = 'none';
-
+            
+            publishMessage("{010000000000000} - iniciarJogo:  D22");
+            
             if (mode === 1) {
+                publishMessage("{001000000000000} - NumPal = 1");
                 document.getElementById('mode1').classList.remove('hidden');
                 document.getElementById('mode2').classList.add('hidden');
                 loadQuestion();
@@ -364,16 +410,25 @@
 
         updateSelected(0);
 
-
         const questions = [
             { word: "Casa", options: ["House", "Cat", "Dog"], correct: "House" },
             { word: "Cão", options: ["Dog", "House", "Tree"], correct: "Dog" },
-            { word: "Árvore", options: ["Cat", "Tree", "House"], correct: "Tree" }
+            { word: "Árvore", options: ["Cat", "Tree", "House"], correct: "Tree" },
+            { word: "Calças", options: ["Paper", "Game", "Pants", "Shirt"], correct: "Pants" },
+            { word: "Cabelo", options: ["Head", "Hair", "Eye", "Shirt"], correct: "Hair" },
+            { word: "Lápis", options: ["Book", "Pen", "Eye", "Pencil"], correct: "Pencil" },
+            { word: "Vassoura", options: ["Vanish", "Broom", "Keyboard"], correct: "Broom" }
         ];
 
         const sentences = [
-            { english: "The cat is under the table", portuguese: ["debaixo", "está", "gato", "O", "da", "mesa"], correct: "O gato está debaixo da mesa" },
-            { english: "The dog is in the house", portuguese: ["está", "O", "na", "cachorro", "casa"], correct: "O cachorro está na casa" }
+            { english: "The cat is under the table", portuguese: ["O", "gato", "está", "debaixo", "da", "mesa"], correct: "O gato está debaixo da mesa" },
+            { english: "My patience is running out", portuguese: ["minha", "paciência", "está", "acabando"], correct: "minha paciência está acabando" },     
+            { english: "Guys say a lot of things", portuguese: ["os caras", "muitas", "falam", "coisas"], correct: "os caras falam muitas coisas" },     
+            { english: "I wait at the bus stop", portuguese: ["ponto de", "espero", "no", "eu", "ônibus"], correct: "eu espero no ponto de ônibus" },     
+            { english: "here I am another day", portuguese: ["dia", "aqui", "um", "mais", "estou"], correct: "aqui estou mais um dia" },     
+            { english: "I wear my pants", portuguese: ["visto", "eu", "minhas", "calças"], correct: "eu visto minhas calças" },     
+          
+            { english: "The dog is in the house", portuguese: ["O", "cachorro", "está", "na", "casa"], correct: "O cachorro está na casa" }
         ];
     </script>
 
