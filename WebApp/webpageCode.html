@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="../style/style.css">
+</head>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+
+<script>
+    var mqtt;
+    var reconnectTimeout = 30000;
+    var host = "test.mosquitto.org";
+    var port = 8080;
+
+    function publishMessage(message) {
+        if (!mqtt || mqtt.connected === false) {
+            console.log(message);
+            return;
+        }
+        const mensagem = message;
+        mqtt.send("poliQuestPortasESP", mensagem, 1, false);
+    }
+
+    function onConnect() {
+        console.log("Conectado");
+        mqtt.subscribe("poliQuestPortasESP");
+    }
+
+    function onError(message) {
+        console.log("Falha: " + message.errorCode + " " + message.errorMessage);
+        setTimeout(MQTTConnect, reconnectTimeout);
+    }
+
+    function onMessageArrived(msg) {
+        console.log(msg.payloadString);
+
+        if (msg.payloadString == "{00000000000010}") {
+            currentIndex++;
+            updateSelected(currentIndex);
+        }
+
+        if (msg.payloadString == "{00000000000100}") {
+            if (currentIndex == 0) {
+                updateSelected(currentIndex);
+            } else {
+                currentIndex--;
+                updateSelected(currentIndex);
+            }
+        }
+
+        if (msg.payloadString == "{00000000000001}") {
+            menuItems[currentIndex].click();
+        }
+
+        if (msg.payloadString == "{00000000010000}") {
+            showMode(5);
+        }
+        if (msg.payloadString == "{00000000001000}") {
+            showMode(4);
+        }
+    }
+
+    function MQTTConnect() {
+        console.log("Contectando " + host + " " + port);
+        mqtt = new Paho.MQTT.Client(host, port, "poliQuestPortasESP");
+        var options = {
+            timeout: 30000,
+            keepAliveInterval: 30000,
+            onSuccess: onConnect,
+            onFailure: onError
+        };
+        mqtt.onMessageArrived = onMessageArrived;
+        mqtt.onConnectionLost = onError;
+        mqtt.connect(options);
+    }
+
+    function playSound(sound) {
+        var sound = document.getElementById(sound);
+        sound.play();
+    }
+
+</script>
+
+<audio id="acertou">
+    <source src="../audio/positivo.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="errou">
+    <source src="../audio/perdeu_jogo.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="click">
+    <source src="../audio/click.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Áudios para as palavras em outro idioma -->
+<audio id="soundHouse">
+    <source src="../audio/house.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundDog">
+    <source src="../audio/dog.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundTree">
+    <source src="../audio/tree.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundPants">
+    <source src="../audio/pants.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundBroom">
+    <source src="../audio/broom.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundHair">
+    <source src="../audio/hair.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundPencil">
+    <source src="../audio/pencil.mp3" type="audio/mpeg">
+</audio>
+
+<!--Áudios para frases --> 
+<audio id="soundThecatisunderthetable">
+    <source src="../audio/thecatisunderthetable.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundThedogisinthehouse">
+    <source src="../audio/thedogisinthehouse.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundMypatienceisrunningout">
+    <source src="../audio/mypatienceisrunningout.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundGuyssayalotofthings">
+    <source src="../audio/Guyssayalotofthings.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundIwaitatthebusstop">
+    <source src="../audio/iwaitatthebusstop.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundhereIamanotherday">
+    <source src="../audio/hereIamanotherday.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundIwearmypants">
+    <source src="../audio/iwearmypants.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundvanish">
+    <source src="../audio/vanish.mp3" type="audio/mpeg">
+</audio>
+
+<!-- <audio id="introMusic" autoplay loop>
+    <source src="audio/theme.mp3" type="audio/mpeg">
+</audio>  -->
+
+</head>
+
+<body onLoad="MQTTConnect()">
+    <h1 id="mainTitle">Bem-Vindo! <br> PoliQuest</h1>
+    <div id="mainMenu">
+        <h2>Selecione um modo de jogo</h2>
+        <a href="#" class="btn" onclick="showMode(1)">Modo 1</a>
+        <a href="#" class="btn" onclick="showMode(2)">Modo 2</a>
+        <br>
+        <a href="#" class="btnInfo" onclick="showMode(3)">Como jogar?</a>        
+    </div>
+    <div id="mode1" class="hidden">
+        <header>
+            <a href="#" class="Qnumber">1/1</a>
+        </header>  
+        <p id="word"></p>
+        <hr>
+        <div class="options" id="optionsMode1"></div>
+        <button id="playSoundButton" class="btn" onclick="playWordSound()">Ouvir Palavra</button>
+        <a href="#" class="btn2" onclick='backToMenu()'>Voltar</a>
+    </div>
+    <div id="mode2" class="hidden">
+        <header>
+            <a href="#" class="Qnumber">1/1</a>
+        </header> 
+        <p id="sentence"></p>
+        <p id="constructedSentence"></p>
+        <hr>
+        <div class="options" id="optionsMode2"></div>
+        <!-- Botão para ouvir a frase completa -->
+        <button id="playSentenceButton" class="btn" onclick="playSentenceSound()">Ouvir Frase</button>
+        <a href="#" class="btn2" onclick='clearConstructedSentence()'>Limpar Frase</a><br>
+        <a href="#" class="btn2" onclick='checkSentence()'>Verificar Frase</a><br>
+        <a href="#" class="btn2" onclick='backToMenu()'>Voltar</a>
+    </div>
+    <div id="mode5" class="hidden">
+        <p id="Ultimate"></p>
+        <h1 id="mainTitle">Parabéns!</h1>
+        <hr>
+        <a href="#" id="btnMode5" class="btn" onclick='backToMenu()'>Voltar</a>
+    </div>
+    <div id="mode4" class="hidden">
+        <p id="Ultimate"></p>
+        <h1 id="mainTitle">Perdeu!</h1>
+        <hr>
+        <a href="#" id="btnMode4" class="btn" onclick='backToMenu()'>Voltar</a>
+    </div>
+    <div id="mode3" class="hidden">
+        <p id="Ultimate"></p>
+        <h4 id="mainTitle">Como jogar?</h4>
+        <h2 id="mainTitle">Modo de Jogo 1:</h2>
+        <h3 id="mainTitle">Nesse modo de jogo uma palavra aparecerá na tela e o jogador deve selecionar
+            entre as opções, a palavra correspondente traduzida para o português
+        </h3>
+        <h2 id="mainTitle">Modo de Jogo 2:</h2>
+        <h3 id="mainTitle">Nesse modo de jogo uma frase aparecerá na tela e o jogador deve selecionar a ordem correta
+            das palavras que juntas, formam a tradução correta da frase para o português
+        </h3>
+        <a href="#" id="btnMode3" class="btn" onclick='backToMenu()'>Voltar</a>
+    </div>
+ </div> 
+</body>
+    <script>
+        let currentSentenceIndex = 0;
+        let constructedSentence = [];
+        let currentIndex = 0;
+        let menuItems = document.querySelectorAll('#mainMenu .btn, #mainMenu .btnInfo');
+        let modeActive = false;
+
+        function updateSelected(index) {
+            menuItems.forEach(item => item.classList.remove('selected'));
+            if (menuItems.length > 0) {
+                menuItems[index].classList.add('selected');
+            }
+        }
+
+        function backToMenu() {
+            publishMessage("{100000000000000} - reset      :  D23");
+            modeActive = false;
+            currentSentenceIndex = 0;
+            constructedSentence = [];
+            document.getElementById('mainTitle').style.display = 'block';
+            document.getElementById('mainMenu').style.display = 'block';
+            document.getElementById('mode1').classList.add('hidden');
+            document.getElementById('mode2').classList.add('hidden');
+            document.getElementById('mode3').classList.add('hidden');
+            document.getElementById('mode4').classList.add('hidden');
+            document.getElementById('mode5').classList.add('hidden');
+            menuItems = document.querySelectorAll('#mainMenu .btn, #mainMenu .btnInfo');
+            currentIndex = 0;
+            updateSelected(currentIndex);
+        }
+
+        function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function loadQuestion() {
+
+            const randomNumber = getRandomInt(0, 6);
+            let question = questions[randomNumber];
+            document.getElementById('word').textContent = `${question.word}`;
+
+            let optionsHtml = [];
+            question.options.forEach((option, index) => {
+                optionsHtml[index] =  `<a href="#" class="btn" onclick='checkAnswer("${index}", "${option}", "${question.correct}")'>${option}</a>`;
+            });
+            //shuffle optionsHtml
+            optionsHtml = optionsHtml.sort(() => Math.random() - 0.5);
+            // make a string with the optionsHtml
+            optionsHtml = optionsHtml.join('');
+
+            document.getElementById('optionsMode1').innerHTML = optionsHtml;
+            menuItems = document.querySelectorAll('#mode1 .btn, #mode1 .options a, #mode1 .btn2');
+
+            currentIndex = 0;
+            updateSelected(currentIndex);
+            
+            // Atualiza o atributo onclick do botão para reproduzir o som correto
+            document.getElementById('playSoundButton').setAttribute('onclick', `playWordSound('${question.correct}')`);
+        }
+
+        function playWordSound(sound) {
+            var soundElement = document.getElementById('sound' + sound);
+            if (soundElement) {
+                soundElement.play();
+            } else {
+                console.log("Som não encontrado para a palavra: " + sound);
+            }
+        }
+
+        let vector = [
+            "1000", "0100", "1100", "0010", "1010", "0110", "1110", "0001", "1001", "0101", "1101", "0011", "1011", "0111"];
+
+        function checkAnswer(index, given, correct) {
+            let message = "{00";
+            message += vector[index];
+            message += "00000000}";
+            publishMessage(message);
+            publishMessage("{000000100000000} - confimaJog :  TX2 ");
+
+            if (given === correct) {
+                playSound("acertou");
+                return;
+            } else {
+                playSound("errou");
+                return;
+            }
+        }
+
+        function playSentenceSound() {
+            let sentence = sentences[currentSentenceIndex];
+            let soundElement = document.getElementById('sound' + sentence.english.replace(/ /g, ''));
+            if (soundElement) {
+                soundElement.play();
+            } else {
+                console.log("Som não encontrado para a frase: " + sentence.english);
+            }
+        }
+
+        function loadSentence() {
+
+            const randomNumber = getRandomInt(0, 6);
+            currentSentenceIndex = randomNumber;
+
+            let sentence = sentences[randomNumber];
+            
+            let numPal = "{00";
+            numPal += vector[sentence.portuguese.length - 1];
+            numPal += "00000000}";
+            publishMessage(numPal);
+            console.log(sentence.portuguese.length);
+
+            document.getElementById('sentence').textContent = `${sentence.english}`;
+            document.getElementById('playSentenceButton').setAttribute('onclick', `playSentenceSound()`);
+
+            // Limpar a frase construída e atualizar a exibição
+            constructedSentence = [];
+            document.getElementById('constructedSentence').textContent = '';
+
+            let optionsHtml = [];
+            sentence.portuguese.forEach((word, index) => {
+                optionsHtml[index] = `<a href="#" class="btn" onclick='addToSentence("${index}", "${word}")'>${word}</a>`;
+            });
+            //shuffle optionsHtml
+            optionsHtml = optionsHtml.sort(() => Math.random() - 0.5);
+            // make a string with the optionsHtml
+            optionsHtml = optionsHtml.join('');
+
+            document.getElementById('optionsMode2').innerHTML = optionsHtml;
+            menuItems = document.querySelectorAll('#mode2 .btn, #mode2 .options a, #mode2 .btn2');
+            currentIndex = 0;
+            updateSelected(currentIndex);
+        }
+        
+        function addToSentence(index, word) {
+            let message = "{00";
+            message += vector[index];
+            message += "00000000}";
+            publishMessage(message);
+            console.log(index);
+            
+            playSound("click");
+            constructedSentence.push(word);
+            document.getElementById('constructedSentence').textContent = constructedSentence.join(' ');
+        }
+
+        function clearConstructedSentence() {
+            publishMessage('{000000010000000} - resetJog   :  RX2');
+            playSound("soundvanish");
+            constructedSentence = [];
+            document.getElementById('constructedSentence').textContent = '';
+        }
+
+        function checkSentence() {
+            publishMessage("{000000100000000} - confimaJog :  TX2 ");
+            let sentence = sentences[currentSentenceIndex];
+            if (constructedSentence.join(' ') === sentence.correct) {
+                playSound("acertou");
+                backToMenu();
+            } else {
+                playSound("errou");
+            }
+        }
+
+        function showMode(mode) {
+            playSound("click");
+            modeActive = true;
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('mainTitle').style.display = 'none';
+            
+            if (mode === 1) {
+                publishMessage("{010000000000000} - iniciarJogo:  D22");
+
+                publishMessage("{001000000000000} - NumPal = 1");
+                document.getElementById('mode1').classList.remove('hidden');
+                document.getElementById('mode2').classList.add('hidden');
+                document.getElementById('mode3').classList.add('hidden');
+                document.getElementById('mode4').classList.add('hidden');
+                document.getElementById('mode5').classList.add('hidden');
+
+                loadQuestion();
+            } else if (mode === 2) {
+                publishMessage("{010000000000000} - iniciarJogo:  D22");
+
+                document.getElementById('mode2').classList.remove('hidden');
+                document.getElementById('mode1').classList.add('hidden');
+                document.getElementById('mode3').classList.add('hidden');
+                document.getElementById('mode4').classList.add('hidden');
+                document.getElementById('mode5').classList.add('hidden');
+                loadSentence();
+            } else if (mode === 3) {
+                document.getElementById('mode3').classList.remove('hidden');
+                document.getElementById('mode1').classList.add('hidden');
+                document.getElementById('mode2').classList.add('hidden');
+                document.getElementById('mode4').classList.add('hidden');
+                document.getElementById('mode5').classList.add('hidden');
+                document.getElementById('btnMode3').focus();
+                menuItems = document.querySelectorAll('#mode3 .btn, #mode3 .options a');
+
+                currentIndex = 0;
+                updateSelected(currentIndex);
+            } else if (mode === 4) {
+                document.getElementById('mode4').classList.remove('hidden');
+                document.getElementById('mode1').classList.add('hidden');
+                document.getElementById('mode2').classList.add('hidden');
+                document.getElementById('mode3').classList.add('hidden');
+                document.getElementById('mode5').classList.add('hidden');
+                document.getElementById('btnMode4').focus();
+                menuItems = document.querySelectorAll('#mode4 .btn, #mode4 .options a');
+
+                currentIndex = 0;
+                updateSelected(currentIndex);
+            } else if (mode === 5) {
+                document.getElementById('mode5').classList.remove('hidden');
+                document.getElementById('mode4').classList.add('hidden');
+                document.getElementById('mode1').classList.add('hidden');
+                document.getElementById('mode2').classList.add('hidden');
+                document.getElementById('mode3').classList.add('hidden');
+                document.getElementById('btnMode5').focus();
+                menuItems = document.querySelectorAll('#mode5 .btn, #mode5 .options a');
+
+                currentIndex = 0;
+                updateSelected(currentIndex);
+            } 
+        }       
+
+        document.addEventListener('keydown', function (event) {
+            if (modeActive) {
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                    currentIndex = (event.key === 'ArrowLeft') ?
+                        (currentIndex > 0 ? currentIndex - 1 : menuItems.length - 1) :
+                        (currentIndex < menuItems.length - 1 ? currentIndex + 1 : 0);
+                    updateSelected(currentIndex);
+                } else if (event.key === 'Enter' && menuItems[currentIndex]) {
+                    menuItems[currentIndex].click();
+                }
+            } else {
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                    currentIndex = (event.key === 'ArrowLeft') ?
+                        (currentIndex > 0 ? currentIndex - 1 : menuItems.length - 1) :
+                        (currentIndex < menuItems.length - 1 ? currentIndex + 1 : 0);
+                    updateSelected(currentIndex);
+                } else if (event.key === 'Enter') {
+                    // Ajuste aqui: garantir que a função showMode seja chamada com o índice correto.
+                    showMode(currentIndex + 1);
+                }
+            }
+        });
+
+        updateSelected(0);
+
+        const questions = [
+            { word: "Casa", options: ["House", "Cat", "Dog"], correct: "House" },
+            { word: "Cão", options: ["Dog", "House", "Tree"], correct: "Dog" },
+            { word: "Árvore", options: ["Tree", "Cat", "House"], correct: "Tree" },
+            { word: "Calças", options: ["Pants", "Paper", "Game", "Shirt"], correct: "Pants" },
+            { word: "Cabelo", options: ["Hair", "Head", "Eye", "Shirt"], correct: "Hair" },
+            { word: "Lápis", options: ["Pencil", "Book", "Pen", "Eye"], correct: "Pencil" },
+            { word: "Vassoura", options: ["Broom", "Vanish", "Keyboard"], correct: "Broom" }
+        ];
+
+        const sentences = [
+            { english: "The cat is under the table", portuguese: ["O", "gato", "está", "debaixo", "da", "mesa"], correct: "O gato está debaixo da mesa" },
+            { english: "My patience is running out", portuguese: ["minha", "paciência", "está", "acabando"], correct: "minha paciência está acabando" },     
+            { english: "Guys say a lot of things", portuguese: ["os caras", "falam", "muitas", "coisas"], correct: "os caras falam muitas coisas" },     
+            { english: "I wait at the bus stop", portuguese: ["eu", "espero", "no", "ponto de", "ônibus"], correct: "eu espero no ponto de ônibus" },     
+            { english: "here I am another day", portuguese: ["aqui",  "estou", "mais", "um", "dia"], correct: "aqui estou mais um dia" },     
+            { english: "I wear my pants", portuguese: ["eu", "visto", "minhas", "calças"], correct: "eu visto minhas calças" },     
+            { english: "The dog is in the house", portuguese: ["O", "cachorro", "está", "na", "casa"], correct: "O cachorro está na casa" }
+        ];
+
+        // document.getElementById('introMusic').volume = 0.5; // Define o volume para metade do volume máximo
+
+    </script>
+</body>
+</html>
