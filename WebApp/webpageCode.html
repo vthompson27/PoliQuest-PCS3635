@@ -163,37 +163,52 @@
 </head>
 
 <body onLoad="MQTTConnect()">
-    <h1 id="mainTitle">Bem-Vindo! <br> PoliQuest</h1>
     <div id="mainMenu">
+        <h1 id="mainTitle">Bem-Vindo! <br> PoliQuest</h1>
+        <div class="bg"></div>
+        <div class="bg bg2"></div>
+        <div class="bg bg3"></div>
+        <div class="content">
         <h2>Selecione um modo de jogo</h2>
         <a href="#" class="btn" onclick="showMode(1)">Modo 1</a>
         <a href="#" class="btn" onclick="showMode(2)">Modo 2</a>
         <br>
         <a href="#" class="btnInfo" onclick="showMode(3)">Como jogar?</a>        
+        </div>
     </div>
     <div id="mode1" class="hidden">
+        <div class="bg"></div>
+        <div class="bg bg2"></div>
+        <div class="bg bg3"></div>
         <header>
             <a href="#" class="Qnumber">1/1</a>
         </header>  
-        <p id="word"></p>
-        <hr>
-        <div class="options" id="optionsMode1"></div>
-        <button id="playSoundButton" class="btn" onclick="playWordSound()">Ouvir Palavra</button>
-        <a href="#" class="btn2" onclick='backToMenu()'>Voltar</a>
+        <div class="contentMode1">
+            <p id="word"></p>
+            <hr>
+            <div class="options" id="optionsMode1"></div>
+            <button id="playSoundButton" class="btn" onclick="playWordSound()">Ouvir Palavra</button>
+            <a href="#" class="btn2" onclick='backToMenu()'>Voltar</a>
+        </div>
     </div>
     <div id="mode2" class="hidden">
+        <div class="bg"></div>
+        <div class="bg bg2"></div>
+        <div class="bg bg3"></div>
         <header>
             <a href="#" class="Qnumber">1/1</a>
         </header> 
-        <p id="sentence"></p>
-        <p id="constructedSentence"></p>
-        <hr>
-        <div class="options" id="optionsMode2"></div>
-        <!-- Botão para ouvir a frase completa -->
-        <button id="playSentenceButton" class="btn" onclick="playSentenceSound()">Ouvir Frase</button>
-        <a href="#" class="btn2" onclick='clearConstructedSentence()'>Limpar Frase</a><br>
-        <a href="#" class="btn2" onclick='checkSentence()'>Verificar Frase</a><br>
-        <a href="#" class="btn2" onclick='backToMenu()'>Voltar</a>
+        <div class="contentMode2">
+            <p id="sentence"></p>
+            <p id="constructedSentence"></p>
+            <hr>
+            <div class="options" id="optionsMode2"></div>
+            <!-- Botão para ouvir a frase completa -->
+            <button id="playSentenceButton" class="btn" onclick="playSentenceSound()">Ouvir Frase</button>
+            <a href="#" class="btn2" onclick='clearConstructedSentence()'>Limpar Frase</a><br>
+            <a href="#" class="btn2" onclick='checkSentence()'>Verificar Frase</a><br>
+            <a href="#" class="btn2" onclick='backToMenu()'>Voltar</a>
+        </div>
     </div>
     <div id="mode5" class="hidden">
         <p id="Ultimate"></p>
@@ -208,17 +223,22 @@
         <a href="#" id="btnMode4" class="btn" onclick='backToMenu()'>Voltar</a>
     </div>
     <div id="mode3" class="hidden">
-        <p id="Ultimate"></p>
-        <h4 id="mainTitle">Como jogar?</h4>
-        <h2 id="mainTitle">Modo de Jogo 1:</h2>
-        <h3 id="mainTitle">Nesse modo de jogo uma palavra aparecerá na tela e o jogador deve selecionar
-            entre as opções, a palavra correspondente traduzida para o português
-        </h3>
-        <h2 id="mainTitle">Modo de Jogo 2:</h2>
-        <h3 id="mainTitle">Nesse modo de jogo uma frase aparecerá na tela e o jogador deve selecionar a ordem correta
-            das palavras que juntas, formam a tradução correta da frase para o português
-        </h3>
-        <a href="#" id="btnMode3" class="btn" onclick='backToMenu()'>Voltar</a>
+        <div class="bg"></div>
+        <div class="bg bg2"></div>
+        <div class="bg bg3"></div>
+        <div class="contentHowtoPlay">
+            <p id="Ultimate"></p>
+            <h4 id="mainTitle">Como jogar?</h4>
+            <h2 id="mainTitle">Modo de Jogo 1:</h2>
+            <h3 id="mainTitle">Nesse modo de jogo uma palavra aparecerá na tela e o jogador deve selecionar
+                entre as opções, a palavra correspondente traduzida para o português
+            </h3>
+            <h2 id="mainTitle">Modo de Jogo 2:</h2>
+            <h3 id="mainTitle">Nesse modo de jogo uma frase aparecerá na tela e o jogador deve selecionar a ordem correta
+                das palavras que juntas, formam a tradução correta da frase para o português
+            </h3>
+            <a href="#" id="btnMode3" class="btn" onclick='backToMenu()'>Voltar</a>
+        </div>
     </div>
  </div> 
 </body>
