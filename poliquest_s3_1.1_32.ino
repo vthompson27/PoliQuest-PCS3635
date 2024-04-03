@@ -1,6 +1,6 @@
 /*
  * ----------------------------------------------------------------------
- *  Arquivo   : poliquest_s3_1.1_32.ino
+ *  Arquivo   : poliquest_s3_1.2_32.ino
  *  Projeto   : PoliQuest
  * ----------------------------------------------------------------------
  *  Descricao : código reponsável por cominucar o FPGA com o servidor
@@ -11,6 +11,7 @@
  *      Data        Versao  Autor             Descricao
  *      28/03/2024  1.0     Vitor Thompson    versao inicial
  *      31/03/2024  1.1     Vitor Thompson    adição dos botões
+ *      01/04/2024  1.2     Vitor Thompson    troca do D2 e D25
  * ----------------------------------------------------------------------
  */
 
@@ -34,26 +35,14 @@
 
 // entradas:
 #define D15 15 // payload[10] ganhou
-#define D2  2  // payload[11] perdeu  
-#define D25 25 // payload[12] botaoEsq
+#define D32 32 // payload[11] perdeu  
+#define D33 33 // payload[12] botaoEsq
 #define D26 26 // payload[13] botaoDir
 #define D27 27 // payload[14] botaoSelect
 
-/*
- * {100000000000000} - reset      :  D23
- * {010000000000000} - iniciarJogo:  D22
- * {001000000000000} - jogada[0]  :  D21
- * {000100000000000} - jogada[1]  :  D19
- * {000010000000000} - jogada[2]  :  D18
- * {000001000000000} - jogada[3]  :  D5
- * {000000100000000} - confimaJog :  TX2 
- * {000000010000000} - resetJog   :  RX2 
- * {000000001000000} - sairJogo   :  D4 
- */
-
 // parametros para conexão com o WiFi
-const char * ssid     = "Apt 164";    // nome da rede
-const char * password = "20220104fm"; // senha
+const char * ssid     = "AndroidAP7F43"; // nome da rede
+const char * password = "tvuh4449";      // senha
 
 // parametros para conexão com o MQTT Broker
 const char * mqtt_broker   = "test.mosquitto.org"; // Host do broker
@@ -92,9 +81,9 @@ void callback (char * topic, byte * payload, unsigned int length); // sera chama
   // entradas:
   pinMode(D27, INPUT);
   pinMode(D26, INPUT);
-  pinMode(D25, INPUT);
+  pinMode(D33, INPUT);
   pinMode(D15, INPUT);
-  pinMode(D2, INPUT);
+  pinMode(D32, INPUT);
  
   // inicializa a conexão com a rede WiFi
   WiFi.begin(ssid, password);
@@ -121,6 +110,7 @@ void loop () {
   if (mqttStatus) {
     client.loop();
 
+    // verifica se o sinal de ganhou do FPGA está acionado
     if (digitalRead(D15)) {
       if (!jaGanhou) {
       client.publish(topic, "{00000000010000}");
@@ -131,7 +121,8 @@ void loop () {
     else
       jaGanhou = false;
     
-    if (digitalRead(D2)) {
+    // verifica se o sinal de perdeu do FPGA está acionado
+    if (digitalRead(D32)) {
       if (!jaPerdeu) {
         client.publish(topic, "{00000000001000}");
         Serial.println("Perdeu jogo");
@@ -141,9 +132,10 @@ void loop () {
     else
       jaPerdeu = false;
 
-      if (digitalRead(D25) || digitalRead(D26) || digitalRead(D27)) {
+      // verifica se algum botão de navegação foi acionado
+      if (digitalRead(D33) || digitalRead(D26) || digitalRead(D27)) {
         if (!jaClicou) {
-          if (digitalRead(D25)) {
+          if (digitalRead(D33)) {
             client.publish(topic, "{00000000000100}");
             Serial.println("botao esquerdo apertado");
           }
@@ -210,6 +202,8 @@ bool connectMQTT () {
 /*
  * Essa função será chamada pelo client.loop() toda vez que 
  * houver uma mudança no tópico que o esp está conectado.
+ * Quando recebe uma mensagem, decodifica o payload e aciona
+ * as portas do ESP32 de acordo com certos bits específicos.
  */
 void callback (char * topic, byte * payload, unsigned int length) {
   Serial.print("Nova mensagem no topico: ");
