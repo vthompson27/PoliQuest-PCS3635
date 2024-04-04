@@ -12,6 +12,7 @@
     cursor: pointer;
     text-align: center;
     padding: 10px;
+    animation: txtFlyIn .7s linear;
 }
 
 .btn2 {
@@ -27,6 +28,7 @@
     cursor: pointer;
     text-align: center;
     padding: 10px;
+    animation: txtFlyIn .7s linear;
 }
 
 .btnInfo {
@@ -42,6 +44,7 @@
     cursor: pointer;
     text-align: center;
     padding: 10px;
+    animation: txtFlyIn .7s linear;
 }
 
 .content {
@@ -132,9 +135,29 @@ animation-duration:4s;
 }
 
 .bg3 {
-animation-duration:s;
+animation-duration:5s;
 }
-    
+
+.transition-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+.transition-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    animation: slideOut 1s forwards;
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -153,7 +176,6 @@ header {
     /* background-color: white; */
 }
 
-
 h1 {
     color: #156912;
     text-align: center;
@@ -165,12 +187,14 @@ h2 {
     color: black;
     text-align: center;
     font-size: 28px;
+    animation: txtFlyIn2 .7s linear;
 }
 
 h3 {
     color: black;
     text-align: center;
     font-size: 24px;
+    animation: txtFlyIn2 .7s linear;
 }
 
 h4 {
@@ -178,6 +202,14 @@ h4 {
     text-align: center;
     font-size: 48px;
     margin-top: 1px;
+    animation: questionFlyIn .7s linear;
+}
+
+h5 {
+    color: black;
+    text-align: center;
+    font-size: 64px;
+    animation: questionFlyIn .7s linear;
 }
 
 #word,
@@ -221,4 +253,27 @@ h4 {
 		transform: translateY(0px);
 	}
 }
-  
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes txtFlyIn{
+    0% { transform:translateX(-100%); }
+    100% { transform:translateX(0%); }
+}
+
+@keyframes questionFlyIn{
+    0% { transform:translateY(-100%); }
+    100% { transform:translateY(0%); }
+}
+
+@keyframes txtFlyIn2{
+    0% { transform:translateY(100%); }
+    100% { transform:translateY(0%); }
+}

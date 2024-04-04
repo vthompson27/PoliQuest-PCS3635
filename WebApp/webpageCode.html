@@ -184,7 +184,7 @@
             <a href="#" class="Qnumber">1/1</a>
         </header>  
         <div class="contentMode1">
-            <p id="word"></p>
+            <h5 id="word"></h5>
             <hr>
             <div class="options" id="optionsMode1"></div>
             <button id="playSoundButton" class="btn" onclick="playWordSound()">Ouvir Palavra</button>
@@ -199,7 +199,7 @@
             <a href="#" class="Qnumber">1/1</a>
         </header> 
         <div class="contentMode2">
-            <p id="sentence"></p>
+            <h5 id="sentence"></h5>
             <p id="constructedSentence"></p>
             <hr>
             <div class="options" id="optionsMode2"></div>
@@ -240,6 +240,9 @@
             <a href="#" id="btnMode3" class="btn" onclick='backToMenu()'>Voltar</a>
         </div>
     </div>
+    <div id="transitionScreen" class="transition-screen">
+        <div class="transition-overlay"></div>
+    </div>
  </div> 
 </body>
     <script>
@@ -248,6 +251,8 @@
         let currentIndex = 0;
         let menuItems = document.querySelectorAll('#mainMenu .btn, #mainMenu .btnInfo');
         let modeActive = false;
+
+        document.getElementById('transitionScreen').classList.add('hidden');
 
         function updateSelected(index) {
             menuItems.forEach(item => item.classList.remove('selected'));
@@ -268,7 +273,20 @@
             document.getElementById('mode3').classList.add('hidden');
             document.getElementById('mode4').classList.add('hidden');
             document.getElementById('mode5').classList.add('hidden');
+            document.getElementById('transitionScreen').classList.add('hidden');
+
             menuItems = document.querySelectorAll('#mainMenu .btn, #mainMenu .btnInfo');
+
+            // Exibe a tela de transição após um curto período de tempo
+            setTimeout(function() {
+                document.getElementById('transitionScreen').classList.remove('hidden');
+                
+                // Aguarda um curto período de tempo antes de esconder a tela de transição
+                setTimeout(function() {
+                    document.getElementById('transitionScreen').classList.add('hidden');
+                }, 1000); // Tempo de duração da animação de transição
+            }); // Tempo antes de iniciar a transição
+
             currentIndex = 0;
             updateSelected(currentIndex);
         }
@@ -410,13 +428,14 @@
         function showMode(mode) {
             playSound("click");
             modeActive = true;
+
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('mainTitle').style.display = 'none';
-            
-            if (mode === 1) {
-                publishMessage("{010000000000000} - iniciarJogo:  D22");
-
-                publishMessage("{001000000000000} - NumPal = 1");
+                
+                if (mode === 1) {
+                    publishMessage("{010000000000000} - iniciarJogo:  D22");
+                    
+                    publishMessage("{001000000000000} - NumPal = 1");
                 document.getElementById('mode1').classList.remove('hidden');
                 document.getElementById('mode2').classList.add('hidden');
                 document.getElementById('mode3').classList.add('hidden');
@@ -467,6 +486,16 @@
                 currentIndex = 0;
                 updateSelected(currentIndex);
             } 
+
+            // Exibe a tela de transição após um curto período de tempo
+            setTimeout(function() {
+                document.getElementById('transitionScreen').classList.remove('hidden');
+                
+                // Aguarda um curto período de tempo antes de esconder a tela de transição
+                setTimeout(function() {
+                    document.getElementById('transitionScreen').classList.add('hidden');
+                }, 1000); // Tempo de duração da animação de transição
+            }); // Tempo antes de iniciar a transição
         }       
 
         document.addEventListener('keydown', function (event) {
