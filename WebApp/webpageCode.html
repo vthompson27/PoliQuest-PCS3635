@@ -439,7 +439,8 @@
         let currentIndex = 0;
         let menuItems = document.querySelectorAll('#mainMenu .btn, #mainMenu .btnInfo');
         let modeActive = false;
-        let usedQuestions = [];
+        let usedQuestions1 = [];
+        let usedQuestions2 = [];
 
         document.getElementById('transitionScreen').classList.add('hidden');
 
@@ -492,6 +493,8 @@
 
         function loadQuestion() {
             const randomNumber = generateNumber(0, 28);
+
+            if (randomNumber){}
             let question = questions[randomNumber];
             usedQuestions.push(randomNumber);
             document.getElementById('word').textContent = `${question.word}`;
