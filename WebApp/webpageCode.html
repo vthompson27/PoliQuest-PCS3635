@@ -261,6 +261,7 @@
         let currentIndex = 0;
         let menuItems = document.querySelectorAll('#mainMenu .btn, #mainMenu .btnInfo');
         let modeActive = false;
+        let usedQuestions = [];
 
         document.getElementById('transitionScreen').classList.add('hidden');
 
@@ -295,7 +296,7 @@
                 setTimeout(function() {
                     document.getElementById('transitionScreen').classList.add('hidden');
                 }, 1000); // Tempo de duração da animação de transição
-            }); // Tempo antes de iniciar a transição
+            });
 
             currentIndex = 0;
             updateSelected(currentIndex);
@@ -307,10 +308,14 @@
         return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function loadQuestion() {
+        function generateNumber() {
+            return getRandomInt(0, 6);
+        }
 
-            const randomNumber = getRandomInt(0, 6);
+        function loadQuestion() {
+            const randomNumber = generateNumber();
             let question = questions[randomNumber];
+            usedQuestions.push(randomNumber);
             document.getElementById('word').textContent = `${question.word}`;
 
             let optionsHtml = [];
@@ -372,7 +377,7 @@
 
         function loadSentence() {
 
-            const randomNumber = getRandomInt(0, 6);
+            const randomNumber = generateNumber();
             currentSentenceIndex = randomNumber;
 
             let sentence = sentences[randomNumber];
@@ -553,7 +558,7 @@
             { english: "The dog is in the house", portuguese: ["O", "cachorro", "está", "na", "casa"], correct: "O cachorro está na casa" }
         ];
 
-        document.getElementById('introMusic').volume = 0.2; // Define o volume para metade do volume máximo
+        // document.getElementById('introMusic').volume = 0.2; // Define o volume para metade do volume máximo
 
     </script>
 </body>
