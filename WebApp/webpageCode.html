@@ -157,14 +157,14 @@
 </audio>
 
 <!-- <audio id="introMusic" autoplay loop>
-    <source src="audio/theme.mp3" type="audio/mpeg">
+    <source src="../audio/coins.mp3" type="audio/mpeg">
 </audio>  -->
 
 </head>
 
 <body onLoad="MQTTConnect()">
     <div id="mainMenu">
-        <h1 id="mainTitle">Bem-Vindo! <br> PoliQuest</h1>
+        <h1 id="mainTitle">Bem-Vindo ao <br> PoliQuest!</h1>
         <div class="bg"></div>
         <div class="bg bg2"></div>
         <div class="bg bg3"></div>
@@ -173,7 +173,7 @@
         <a href="#" class="btn" onclick="showMode(1)">Modo 1</a>
         <a href="#" class="btn" onclick="showMode(2)">Modo 2</a>
         <br>
-        <a href="#" class="btnInfo" onclick="showMode(3)">Como jogar?</a>        
+        <a href="#" class="btnInfo" onclick="showMode(5)">Como jogar?</a>        
         </div>
     </div>
     <div id="mode1" class="hidden">
@@ -211,16 +211,26 @@
         </div>
     </div>
     <div id="mode5" class="hidden">
-        <p id="Ultimate"></p>
-        <h1 id="mainTitle">Parabéns!</h1>
-        <hr>
-        <a href="#" id="btnMode5" class="btn" onclick='backToMenu()'>Voltar</a>
+        <canvas id="canvas"></canvas>
+        <script src="../JavaScript/confetti.js"></script>
+        <div class="bg"></div>
+        <div class="bg bg2"></div>
+        <div class="bg bg3"></div>
+        <div class="contentMode5">
+            <p id="Ultimate"></p>
+            <h6 id="mainTitle">Muito Bem!</h6>
+            <a href="#" id="btnMode5" class="btn2" onclick='backToMenu()'>Voltar</a>
+        </div>
     </div>
     <div id="mode4" class="hidden">
-        <p id="Ultimate"></p>
-        <h1 id="mainTitle">Perdeu!</h1>
-        <hr>
-        <a href="#" id="btnMode4" class="btn" onclick='backToMenu()'>Voltar</a>
+        <div class="bg4"></div>
+        <div class="bg4 bg2"></div>
+        <div class="bg4 bg3"></div>
+        <div class="contentMode5">
+            <p id="Ultimate"></p>
+            <h7 id="mainTitle">Tente Novamente! :(</h7>
+            <a href="#" id="btnMode4" class="btn2" onclick='backToMenu()'>Voltar</a>
+        </div>
     </div>
     <div id="mode3" class="hidden">
         <div class="bg"></div>
@@ -543,7 +553,7 @@
             { english: "The dog is in the house", portuguese: ["O", "cachorro", "está", "na", "casa"], correct: "O cachorro está na casa" }
         ];
 
-        // document.getElementById('introMusic').volume = 0.5; // Define o volume para metade do volume máximo
+        document.getElementById('introMusic').volume = 0.2; // Define o volume para metade do volume máximo
 
     </script>
 </body>

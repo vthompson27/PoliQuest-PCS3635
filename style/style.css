@@ -138,6 +138,18 @@ animation-duration:4s;
 animation-duration:5s;
 }
 
+.bg4 {
+    animation:slide 3s ease-in-out infinite alternate;
+    background-image: linear-gradient(-60deg, rgb(255, 81, 0) 50%, rgb(255, 0, 0) 50%);
+    bottom:0;
+    left:-50%;
+    opacity:.5;
+    position:fixed;
+    right:-50%;
+    top:0;
+    z-index:-1;
+    }
+
 .transition-screen {
     position: fixed;
     top: 0;
@@ -156,6 +168,18 @@ animation-duration:5s;
     height: 100%;
     background-color: black;
     animation: slideOut 1s forwards;
+    /* background-image: url('../PQ_logo.jpeg'); */
+}
+
+.contentMode5 {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 2; /* Garante que este contêiner esteja acima do contêiner da animação de confete */
 }
 
 body {
@@ -211,6 +235,31 @@ h5 {
     font-size: 64px;
     animation: questionFlyIn .7s linear;
 }
+
+h6 {
+    position: absolute;
+    color: #dbf20a;
+    text-align: center;
+    font-size: 64px;
+    margin-top: 300px;
+    animation: float 5s ease-in-out infinite;
+}
+
+h7 {
+    position: absolute;
+    color: black;
+    text-align: center;
+    font-size: 64px;
+    margin-top: 300px;
+    animation: float 5s ease-in-out infinite;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
 
 #word,
 #sentence,
