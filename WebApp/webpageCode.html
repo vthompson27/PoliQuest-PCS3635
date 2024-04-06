@@ -12,6 +12,8 @@
     var reconnectTimeout = 30000;
     var host = "test.mosquitto.org";
     var port = 8080;
+    let correctCount = 0;
+    let victory = false;
 
     function publishMessage(message) {
         if (!mqtt || mqtt.connected === false) {
@@ -36,8 +38,12 @@
         console.log(msg.payloadString);
 
         if (msg.payloadString == "{00000000000010}") {
-            currentIndex++;
-            updateSelected(currentIndex);
+            if (currentIndex < menuItems.length - 1){
+                currentIndex++;
+                updateSelected(currentIndex);
+            } else {
+                updateSelected(currentIndex);
+            }
         }
 
         if (msg.payloadString == "{00000000000100}") {
@@ -54,9 +60,28 @@
         }
 
         if (msg.payloadString == "{00000000010000}") {
+            correctCount++;
+            if (correctCount == 4 && currentMode == 1) {
+            victory = true;
+            usedQuestions1 = [];
+            correctCount = 0;
             showMode(5);
+            }
+
+            if (correctCount == 2 && currentMode == 2) {
+            victory = true;
+            usedQuestions2 = [];
+            correctCount = 0;
+            showMode(5);
+            }
+
+            publishMessage("{100000000000000} - reset      :  D23");
+            showMode(currentMode);
         }
         if (msg.payloadString == "{00000000001000}") {
+            usedQuestions1 = [];
+            usedQuestions2 = [];
+            correctCount = 0;
             showMode(4);
         }
     }
@@ -189,6 +214,10 @@
 
 <audio id="soundRiver">
     <source src="../audio/River.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundPhone">
+    <source src="../audio/Phone.mp3" type="audio/mpeg">
 </audio>
 
 <!--Áudios para frases -->
@@ -359,7 +388,7 @@
         <div class="bg bg2"></div>
         <div class="bg bg3"></div>
         <header>
-            <a href="#" class="Qnumber">1/1</a>
+            <a href="#" class="Qnumber" id="Qnumber"></a>
         </header>
         <div class="contentMode1">
             <h5 id="word"></h5>
@@ -374,7 +403,7 @@
         <div class="bg bg2"></div>
         <div class="bg bg3"></div>
         <header>
-            <a href="#" class="Qnumber">1/1</a>
+            <a href="#" class="Qnumber" id="Qnumber2"></a>
         </header>
         <div class="contentMode2">
             <h5 id="sentence"></h5>
@@ -426,7 +455,7 @@
                 correta
                 das palavras que juntas, formam a tradução correta da frase para o português
             </h3>
-            <a href="#" id="btnMode3" class="btn" onclick='backToMenu()'>Voltar</a>
+            <a href="#" id="btnMode3" class="btn2" onclick='backToMenu()'>Voltar</a>
         </div>
     </div>
     <div id="transitionScreen" class="transition-screen">
@@ -442,6 +471,7 @@
     let modeActive = false;
     let usedQuestions1 = [];
     let usedQuestions2 = [];
+    let currentMode = 0;
 
     document.getElementById('transitionScreen').classList.add('hidden');
 
@@ -457,6 +487,9 @@
         modeActive = false;
         currentSentenceIndex = 0;
         constructedSentence = [];
+        usedQuestions1 = [];
+        usedQuestions2 = [];
+        correctCount = 0;
         document.getElementById('mainTitle').style.display = 'block';
         document.getElementById('mainMenu').style.display = 'block';
         document.getElementById('mode1').classList.add('hidden');
@@ -494,32 +527,33 @@
 
     function loadQuestion() {
         const randomNumber = generateNumber(0, 28);
-        // if (usedQuestions1.includes(randomNumber)){
-
-        // }
-        let question = questions[randomNumber];
-        // usedQuestions1.push(randomNumber);
-        document.getElementById('word').textContent = `${question.word}`;
-
-        let optionsHtml = [];
-        question.options.forEach((option, index) => {
-            optionsHtml[index] = `<a href="#" class="btn" onclick='checkAnswer("${index}", "${option}", "${question.correct}")'>${option}</a>`;
+        if (usedQuestions1.includes(randomNumber)){
+            loadQuestion();
+        } else {
+            let question = questions[randomNumber];
+            usedQuestions1.push(randomNumber);
+            document.getElementById('word').textContent = `${question.word}`;
+            
+            let optionsHtml = [];
+            question.options.forEach((option, index) => {
+                optionsHtml[index] = `<a href="#" class="btn" onclick='checkAnswer("${index}", "${option}", "${question.correct}")'>${option}</a>`;
         });
         //shuffle optionsHtml
         optionsHtml = optionsHtml.sort(() => Math.random() - 0.5);
         // make a string with the optionsHtml
         optionsHtml = optionsHtml.join('');
-
+        
         document.getElementById('optionsMode1').innerHTML = optionsHtml;
         menuItems = document.querySelectorAll('#mode1 .btn, #mode1 .options a, #mode1 .btn2');
-
+        
         currentIndex = 0;
         updateSelected(currentIndex);
-
+        
         // Atualiza o atributo onclick do botão para reproduzir o som correto
         document.getElementById('playSoundButton').setAttribute('onclick', `playWordSound('${question.correct}')`);
+        } 
     }
-
+    
     function playWordSound(sound) {
         var soundElement = document.getElementById('sound' + sound);
         if (soundElement) {
@@ -560,12 +594,14 @@
     }
 
     function loadSentence() {
-
         const randomNumber = generateNumber(0, 29);
-        currentSentenceIndex = randomNumber;
+        if (usedQuestions2.includes(randomNumber)){
+            loadSentence();
+        } else {
+            currentSentenceIndex = randomNumber;
 
         let sentence = sentences[randomNumber];
-
+        usedQuestions2.push(randomNumber);
         let numPal = "{00";
         numPal += vector[sentence.portuguese.length - 1];
         numPal += "00000000}";
@@ -592,8 +628,9 @@
         menuItems = document.querySelectorAll('#mode2 .btn, #mode2 .options a, #mode2 .btn2');
         currentIndex = 0;
         updateSelected(currentIndex);
+        }
     }
-
+    
     function addToSentence(index, word) {
         let message = "{00";
         message += vector[index];
@@ -618,13 +655,13 @@
         let sentence = sentences[currentSentenceIndex];
         if (constructedSentence.join(' ') === sentence.correct) {
             playSound("acertou");
-            backToMenu();
         } else {
             playSound("errou");
         }
     }
 
     function showMode(mode) {
+        currentMode = mode;
         playSound("click");
         modeActive = true;
 
@@ -640,7 +677,8 @@
             document.getElementById('mode3').classList.add('hidden');
             document.getElementById('mode4').classList.add('hidden');
             document.getElementById('mode5').classList.add('hidden');
-
+            var comp1 = document.getElementById("Qnumber");
+            comp1.innerHTML = usedQuestions1.length+1 + '/4';
             loadQuestion();
         } else if (mode === 2) {
             publishMessage("{010000000000000} - iniciarJogo:  D22");
@@ -650,6 +688,8 @@
             document.getElementById('mode3').classList.add('hidden');
             document.getElementById('mode4').classList.add('hidden');
             document.getElementById('mode5').classList.add('hidden');
+            var comp2 = document.getElementById("Qnumber2");
+            comp2.innerHTML = usedQuestions2.length+1 + '/2';
             loadSentence();
         } else if (mode === 3) {
             document.getElementById('mode3').classList.remove('hidden');
@@ -658,7 +698,7 @@
             document.getElementById('mode4').classList.add('hidden');
             document.getElementById('mode5').classList.add('hidden');
             document.getElementById('btnMode3').focus();
-            menuItems = document.querySelectorAll('#mode3 .btn, #mode3 .options a');
+            menuItems = document.querySelectorAll('#mode3 .btn2, #mode3 .options a');
 
             currentIndex = 0;
             updateSelected(currentIndex);
@@ -669,7 +709,7 @@
             document.getElementById('mode3').classList.add('hidden');
             document.getElementById('mode5').classList.add('hidden');
             document.getElementById('btnMode4').focus();
-            menuItems = document.querySelectorAll('#mode4 .btn, #mode4 .options a');
+            menuItems = document.querySelectorAll('#mode4 .btn2, #mode4 .options a');
 
             currentIndex = 0;
             updateSelected(currentIndex);
@@ -680,7 +720,7 @@
             document.getElementById('mode2').classList.add('hidden');
             document.getElementById('mode3').classList.add('hidden');
             document.getElementById('btnMode5').focus();
-            menuItems = document.querySelectorAll('#mode5 .btn, #mode5 .options a');
+            menuItems = document.querySelectorAll('#mode5 .btn2, #mode5 .options a');
 
             currentIndex = 0;
             updateSelected(currentIndex);
