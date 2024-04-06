@@ -38,8 +38,12 @@
         console.log(msg.payloadString);
 
         if (msg.payloadString == "{00000000000010}") {
-            currentIndex++;
-            updateSelected(currentIndex);
+            if (currentIndex < menuItems.length - 1){
+                currentIndex++;
+                updateSelected(currentIndex);
+            } else {
+                updateSelected(currentIndex);
+            }
         }
 
         if (msg.payloadString == "{00000000000100}") {
@@ -451,7 +455,7 @@
                 correta
                 das palavras que juntas, formam a tradução correta da frase para o português
             </h3>
-            <a href="#" id="btnMode3" class="btn" onclick='backToMenu()'>Voltar</a>
+            <a href="#" id="btnMode3" class="btn2" onclick='backToMenu()'>Voltar</a>
         </div>
     </div>
     <div id="transitionScreen" class="transition-screen">
@@ -483,6 +487,9 @@
         modeActive = false;
         currentSentenceIndex = 0;
         constructedSentence = [];
+        usedQuestions1 = [];
+        usedQuestions2 = [];
+        correctCount = 0;
         document.getElementById('mainTitle').style.display = 'block';
         document.getElementById('mainMenu').style.display = 'block';
         document.getElementById('mode1').classList.add('hidden');
@@ -691,7 +698,7 @@
             document.getElementById('mode4').classList.add('hidden');
             document.getElementById('mode5').classList.add('hidden');
             document.getElementById('btnMode3').focus();
-            menuItems = document.querySelectorAll('#mode3 .btn, #mode3 .options a');
+            menuItems = document.querySelectorAll('#mode3 .btn2, #mode3 .options a');
 
             currentIndex = 0;
             updateSelected(currentIndex);
@@ -702,7 +709,7 @@
             document.getElementById('mode3').classList.add('hidden');
             document.getElementById('mode5').classList.add('hidden');
             document.getElementById('btnMode4').focus();
-            menuItems = document.querySelectorAll('#mode4 .btn, #mode4 .options a');
+            menuItems = document.querySelectorAll('#mode4 .btn2, #mode4 .options a');
 
             currentIndex = 0;
             updateSelected(currentIndex);
@@ -713,7 +720,7 @@
             document.getElementById('mode2').classList.add('hidden');
             document.getElementById('mode3').classList.add('hidden');
             document.getElementById('btnMode5').focus();
-            menuItems = document.querySelectorAll('#mode5 .btn, #mode5 .options a');
+            menuItems = document.querySelectorAll('#mode5 .btn2, #mode5 .options a');
 
             currentIndex = 0;
             updateSelected(currentIndex);
